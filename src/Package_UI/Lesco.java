@@ -155,10 +155,11 @@ public class Lesco {
         frame.dispose();
     }
 
-    public static void main(String[] args) {
+    // public static void main(String[] args) {
 
-        Lesco lesco = new Lesco();
-
-    }
+    //     // Lesco lesco = new Lesco();
+    //     CustomerLogin customerLogin = new CustomerLogin();
+    //     // EmployeeLogin employeeLogin = new EmployeeLogin();
+    // }
 
 }

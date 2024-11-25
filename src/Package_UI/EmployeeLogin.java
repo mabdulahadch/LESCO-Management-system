@@ -12,6 +12,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,6 +23,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import Package_BL.Customer;
 import Package_BL.Employee;
 import Package_BL.projectTxtFiles;
 import java.awt.Graphics;
@@ -36,6 +42,8 @@ public class EmployeeLogin {
     private JButton loginButton, backButton;
 
     public EmployeeLogin() {
+        
+        LoadFont.loadCustomFont();
         loginFrame = new JFrame("Employee Login");
         loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         loginFrame.setBounds(350, 100, 1200, 800);
@@ -122,21 +130,41 @@ public class EmployeeLogin {
         loginFrame.add(backButton, gbc);
 
         loginButton.addActionListener((ActionEvent e) -> {
+           
+
+           
+        });
+
+        loginButton.addActionListener((ActionEvent e) -> {
             String username = userField.getText();
             String password = new String(passField.getPassword());
-            Employee emp = empLogin(username, password);
 
-            if (emp != null) {
-                // further functions
-                EmployeeDashBoard empDash = new EmployeeDashBoard();
-                empDash.openEmployeeDashboard(emp);  // Open employee dashboard on successful login
-                loginFrame.dispose(); // Close login window after successful login
-            } else {
-                System.out.println("Login Not Successfull");
-                JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
-                userField.setText("");
-                passField.setText("");
+            try (Socket socket = new Socket("localhost", 12345); // Connect to server
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
+                out.println("LOGINASEMPLOYEE");
+                out.println(username);
+                out.println(password);
+
+                String response = in.readLine();
+
+                if ("SUCCESS".equals(response)) {
+                    // further functions
+                    EmployeeDashBoard empDash = new EmployeeDashBoard();
+                    empDash.openEmployeeDashboard(null,socket);  // Open employee dashboard on successful login
+                    loginFrame.dispose(); // Close login window after successful login
+                } else {
+                    System.out.println("Login Not Successfull");
+                    JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
+                    userField.setText("");
+                    passField.setText("");
+    
+                }
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(loginFrame, "Server not available. Try again later.");
+                ex.printStackTrace();
             }
         });
 
@@ -180,38 +208,6 @@ public class EmployeeLogin {
 
         button.setFocusPainted(false);
         return button;
-    }
-
-    public static Employee empLogin(String username, String password) {
-        File file = new File(projectTxtFiles.EmployeesFile);
-
-        if (file.length() == 0) {
-            System.out.println("Nothing in the file! No records found.");
-            return null;
-        }
-
-        if (validateEmpLogin(username, password)) {
-            System.out.println("Login successful!");
-            return new Employee(username, password);
-        } else {
-            System.out.println("Invalid username or password. Enter Again!");
-            return null;
-        }
-    }
-
-    public static boolean validateEmpLogin(String username, String password) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(projectTxtFiles.EmployeesFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] employeeData = line.split(",");
-                if (employeeData[0].equals(username) && employeeData[1].equals(password)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error while reasding file");
-        }
-        return false;
     }
 
 }

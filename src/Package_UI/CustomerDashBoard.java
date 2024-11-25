@@ -7,6 +7,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -17,7 +19,7 @@ import javax.swing.border.Border;
 
 public class CustomerDashBoard {
 
-    public void openCustomerDashboard(Customer cst) {
+    public void openCustomerDashboard(Socket socket) {
         JFrame customerFrame = new JFrame("Customer Dashboard");
         customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         customerFrame.setBounds(350, 100, 1200, 800);
@@ -30,7 +32,7 @@ public class CustomerDashBoard {
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new CardLayout());
-        contentPanel.add(C_HomePanel.createHomePanel(cst));
+        contentPanel.add(C_HomePanel.createHomePanel(socket));
         
         String[] options = {
             "Home",
@@ -85,17 +87,17 @@ public class CustomerDashBoard {
             btn[index].addActionListener(e -> {
                 CardLayout cl = (CardLayout) (contentPanel.getLayout());
                 if (options[index].equals("Home")) {
-                    contentPanel.add(C_HomePanel.createHomePanel(cst), "Home");
+                    contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
                     cl.show(contentPanel, "Home");
                 }else if (options[index].equals("View Bill")) {
-                    contentPanel.add(C_ViewBillPanel.createViewBillPanel(cst), "ViewBill");
+                    contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
                     cl.show(contentPanel, "ViewBill");
                 } else if (options[index].equals("Update CNIC Expiry Date")) {
-                    contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(cst), "UpdateCNIC");
+                    contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(null), "UpdateCNIC");
                     cl.show(contentPanel, "UpdateCNIC");
                 } else if (options[index].equals("Logout")) {
                     customerFrame.dispose();
-                    new Lesco();
+                    // new Lesco();
                 }
             });
         }

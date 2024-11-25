@@ -6,6 +6,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -16,7 +18,7 @@ import Package_BL.Employee;
 
 public class EmployeeDashBoard {
 
-    public void openEmployeeDashboard(Employee emp) {
+    public void openEmployeeDashboard(Employee emp,Socket socket) {
 
         JFrame employeeFrame = new JFrame("Employee Dashboard");
         employeeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,7 +33,7 @@ public class EmployeeDashBoard {
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new CardLayout());
-        contentPanel.add(E_HomePanel.createHomePanel(emp));
+        contentPanel.add(E_HomePanel.createHomePanel(socket));
 
         String[] options = {
             "Home",
@@ -80,7 +82,7 @@ public class EmployeeDashBoard {
 
                 switch (option) {
                     case "Home" -> {  // Done
-                        contentPanel.add(E_HomePanel.createHomePanel(emp), "HomePanel");
+                        contentPanel.add(E_HomePanel.createHomePanel(socket), "HomePanel");
                         cl.show(contentPanel, "HomePanel");
                     }
                     case "Add New Customer" -> {  // Done

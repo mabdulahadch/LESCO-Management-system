@@ -12,6 +12,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -34,7 +38,9 @@ public class CustomerLogin {
     private JButton loginButton, backButton;
 
     public CustomerLogin() {
-        loginFrame = new JFrame("Employee Login");
+        
+        LoadFont.loadCustomFont();
+        loginFrame = new JFrame("Customer Login");
         loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         loginFrame.setBounds(350, 100, 1200, 800);
         loginFrame.setResizable(false);
@@ -87,12 +93,12 @@ public class CustomerLogin {
         gbc.gridx = 1;
         gbc.gridy = 1;
         loginFrame.add(passField, gbc);
-        
-                passField.addActionListener(new ActionListener() {
+
+        passField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Transfer focus to password field
-               loginButton.doClick();
+                loginButton.doClick();
             }
         });
 
@@ -126,18 +132,29 @@ public class CustomerLogin {
         loginButton.addActionListener((ActionEvent e) -> {
             String userID = passField.getText();
             String userCNIC = userField.getText();
-            Customer cst = custLogin(userID, userCNIC);
 
-            if (cst != null) {
-                CustomerDashBoard cstDash = new CustomerDashBoard();
-                cstDash.openCustomerDashboard(cst);
-                loginFrame.dispose();
-            } else {
-                System.out.println("Login Not Successfull");
-                JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
-                userField.setText("");
-                passField.setText("");
+            try (Socket socket = new Socket("localhost", 12345); // Connect to server
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
+                out.println("LOGINASCUSTOMER");
+                out.println(userID);
+                out.println(userCNIC);
+
+                String response = in.readLine();
+                if ("SUCCESS".equals(response)) {
+                    CustomerDashBoard cstDash = new CustomerDashBoard();
+                    cstDash.openCustomerDashboard(socket);
+                    loginFrame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
+                    userField.setText("");
+                    passField.setText("");
+                }
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(loginFrame, "Server not available. Try again later.");
+                ex.printStackTrace();
             }
         });
     }
@@ -176,40 +193,6 @@ public class CustomerLogin {
 
         button.setFocusPainted(false);
         return button;
-    }
-
-    public static Customer custLogin(String userID, String userCNIC) {
-
-        File file = new File(projectTxtFiles.CustomerFile);
-
-        if (file.length() == 0) {
-            System.out.println("Nothing in the file! No records found.");
-            return null;
-        }
-
-        if (validateCustLogin(userID, userCNIC)) {
-            //System.out.println("Login successful!");
-            return new Customer(userID, userCNIC);
-        } else {
-            System.out.println("Invalid userId or cnic. Enter Again!");
-            return null;
-        }
-    }
-
-    public static boolean validateCustLogin(String userId, String cnic) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(projectTxtFiles.CustomerFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] custData = line.split(",");
-                if (custData[0].equals(userId) && custData[4].equals(cnic)) {
-                    System.out.println("Logged In as : " + custData[1]);
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error while reasding file");
-        }
-        return false;
     }
 
 }

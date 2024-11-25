@@ -7,6 +7,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,7 +26,7 @@ import javax.swing.table.TableRowSorter;
 
 public class C_ViewBillPanel {
     
-    public static JPanel createViewBillPanel(Customer cst) {
+    public static JPanel createViewBillPanel(Socket socket) {
 
         JPanel viewCustomerBillsPanel = new JPanel(new BorderLayout());
         viewCustomerBillsPanel.setBorder(new EmptyBorder(1, 0, 0, 0));
@@ -46,7 +48,7 @@ public class C_ViewBillPanel {
         viewCustomerBillsPanel.add(searchBarPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"ID", "Month", "Regular", "Peak", "Cost of Electricity", "SalesTax", "Fixed $", "Total Bill", "Reading Date", "DueDate", "Bill Status"};
-        Object[][] data = cst.readDataFromBillingDB();
+        Object[][] data =null;//= cst.readDataFromBillingDB();
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
