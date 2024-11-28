@@ -31,9 +31,13 @@ public class CustomerDashBoard {
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new CardLayout());
-        contentPanel.add(C_HomePanel.createHomePanel(socket));
-        
+        CardLayout cardLayout = new CardLayout();
+        contentPanel.setLayout(cardLayout);
+
+        contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
+        contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
+      
+
         String[] options = {
             "Home",
             "View Bill",
@@ -84,20 +88,32 @@ public class CustomerDashBoard {
             buttonPanel.add(Box.createRigidArea(new Dimension(3, 0)));
 
             // ActionListener for the buttons
+            // btn[index].addActionListener(e -> {
+            //     CardLayout cl = (CardLayout) (contentPanel.getLayout());
+            //     if (options[index].equals("Home")) {
+            //         contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
+            //         cl.show(contentPanel, "Home");
+            //     }else if (options[index].equals("View Bill")) {
+            //         contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
+            //         cl.show(contentPanel, "ViewBill");
+            //     } else if (options[index].equals("Update CNIC Expiry Date")) {
+            //         contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(null), "UpdateCNIC");
+            //         cl.show(contentPanel, "UpdateCNIC");
+            //     } else if (options[index].equals("Logout")) {
+            //         customerFrame.dispose();
+            //         // new Lesco();
+            //     }
+            // });
+
             btn[index].addActionListener(e -> {
-                CardLayout cl = (CardLayout) (contentPanel.getLayout());
                 if (options[index].equals("Home")) {
-                    contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
-                    cl.show(contentPanel, "Home");
-                }else if (options[index].equals("View Bill")) {
-                    contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
-                    cl.show(contentPanel, "ViewBill");
+                    cardLayout.show(contentPanel, "Home");
+                } else if (options[index].equals("View Bill")) {
+                    cardLayout.show(contentPanel, "ViewBill");
                 } else if (options[index].equals("Update CNIC Expiry Date")) {
-                    contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(null), "UpdateCNIC");
-                    cl.show(contentPanel, "UpdateCNIC");
+                    cardLayout.show(contentPanel, "UpdateCNIC");
                 } else if (options[index].equals("Logout")) {
                     customerFrame.dispose();
-                    // new Lesco();
                 }
             });
         }

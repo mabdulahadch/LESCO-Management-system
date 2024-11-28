@@ -79,12 +79,12 @@ class ClientHandler extends Thread {
                         System.out.println("Sent bill data object to the client.");
                     } catch (Exception e) {
                     }
-                } else {
-                    out.println("ERROR: Not logged in");
-                    System.out.println("Client requested name but is not logged in.");
                 }
-
-
+                
+                // else {
+                //     out.println("ERROR: Not logged in");
+                //     System.out.println("Client requested name but is not logged in.");
+                // }
 
 
                 

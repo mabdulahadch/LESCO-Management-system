@@ -7,10 +7,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -25,7 +31,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 public class C_ViewBillPanel {
-    
+
     public static JPanel createViewBillPanel(Socket socket) {
 
         JPanel viewCustomerBillsPanel = new JPanel(new BorderLayout());
@@ -47,8 +53,26 @@ public class C_ViewBillPanel {
 
         viewCustomerBillsPanel.add(searchBarPanel, BorderLayout.NORTH);
 
-        String[] columnNames = {"ID", "Month", "Regular", "Peak", "Cost of Electricity", "SalesTax", "Fixed $", "Total Bill", "Reading Date", "DueDate", "Bill Status"};
-        Object[][] data =null;//= cst.readDataFromBillingDB();
+        String[] columnNames = { "ID", "Month", "Regular", "Peak", "Cost of Electricity", "SalesTax", "Fixed $",
+                "Total Bill", "Reading Date", "DueDate", "Bill Status" };
+        Object[][] data = null;
+
+        try {
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            writer.println("getCustomerBill");
+
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+            data = (Object[][]) objectInputStream.readObject();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (data == null) {
+            data = new Object[0][columnNames.length]; // Ensure correct column count
+        }
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override

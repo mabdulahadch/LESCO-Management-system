@@ -28,8 +28,10 @@ public class C_HomePanel {
 
         
         String response="";
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try
+        {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             out.println("getName");
             response = in.readLine();
