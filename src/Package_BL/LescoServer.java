@@ -94,6 +94,7 @@ class ClientHandler extends Thread {
                         } catch (Exception e) {
                             objectOut.writeObject("ERROR: Unable to fetch bill data.");
                             e.printStackTrace();
+
                         }
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");

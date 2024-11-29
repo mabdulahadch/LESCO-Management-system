@@ -142,6 +142,7 @@ public class Employee {
     public boolean saveChangesToTariffTaxDB(DefaultTableModel tableModel) {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
+
     public boolean saveChangesToBillingDB(DefaultTableModel tableModel, String latestEditableMonth) {
         return BillManagment.saveChangesToBillingDB(tableModel,latestEditableMonth);
     }
