@@ -9,6 +9,8 @@ import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -18,28 +20,26 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class E_HomePanel {
-    
-    public static JPanel createHomePanel(Socket socket) {
-        
+
+    public static JPanel createHomePanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
+
         JPanel HomePanel = new JPanel();
         ImageIcon imageIcon = new ImageIcon("src/Images/backgroundimg.png"); // Path to your image
         Image image = imageIcon.getImage().getScaledInstance(980, 750, Image.SCALE_SMOOTH);
         JLabel background = new JLabel(new ImageIcon(image));
         background.setLayout(new BorderLayout());
 
-        
-        String response="";
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        String response = "";
+        try {
 
-            out.println("getUserName");
-            response = in.readLine();
+            objectOut.writeObject("getUserName");
+            response = (String) objectIn.readObject(); // Read the server's response
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        JLabel welcomeLabel = new JLabel("Welcome "+response);
+        JLabel welcomeLabel = new JLabel("Welcome " + response);
         welcomeLabel.setFont(LoadFont.customFont1.deriveFont(Font.BOLD, 73));
         welcomeLabel.setForeground(Color.WHITE);
         welcomeLabel.setHorizontalAlignment(JLabel.CENTER); // Center the text horizontally

@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -38,7 +40,7 @@ public class CustomerLogin {
     private JButton loginButton, backButton;
 
     public CustomerLogin() {
-        
+
         LoadFont.loadCustomFont();
         loginFrame = new JFrame("Customer Login");
         loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -126,7 +128,7 @@ public class CustomerLogin {
 
         backButton.addActionListener((ActionEvent e) -> {
             loginFrame.dispose();
-            new Lesco();
+            // new Lesco();
         });
 
         loginButton.addActionListener((ActionEvent e) -> {
@@ -134,17 +136,19 @@ public class CustomerLogin {
             String userCNIC = userField.getText();
 
             try (Socket socket = new Socket("localhost", 12345); // Connect to server
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                    ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream())) {
 
-                out.println("LOGINASCUSTOMER");
-                out.println(userID);
-                out.println(userCNIC);
+                // Send login command and credentials
+                objectOut.writeObject("LOGINASCUSTOMER");
+                objectOut.writeObject(userID);
+                objectOut.writeObject(userCNIC);
 
-                String response = in.readLine();
+                // Receive response
+                String response = (String) objectIn.readObject();
                 if ("SUCCESS".equals(response)) {
                     CustomerDashBoard cstDash = new CustomerDashBoard();
-                    cstDash.openCustomerDashboard(socket);
+                    cstDash.openCustomerDashboard(socket, objectOut, objectIn); // Pass streams to the dashboard
                     loginFrame.dispose();
                 } else {
                     JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
@@ -152,11 +156,12 @@ public class CustomerLogin {
                     passField.setText("");
                 }
 
-            } catch (IOException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(loginFrame, "Server not available. Try again later.");
                 ex.printStackTrace();
             }
         });
+
     }
 
     class BackgroundPanel extends JPanel {

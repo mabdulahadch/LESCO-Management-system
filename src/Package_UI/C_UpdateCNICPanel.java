@@ -1,7 +1,6 @@
 package Package_UI;
 
 import Font.LoadFont;
-import Package_BL.Customer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,6 +8,10 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -28,16 +31,17 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 
 public class C_UpdateCNICPanel {
-    
+
     private static boolean isColumnEdited = false;
-    
-    public static JPanel createUpdateCNICPanel(Customer cst) {
+
+    public static JPanel createUpdateCNICPanel(Socket socket, ObjectOutputStream objectOut,
+            ObjectInputStream objectIn) {
 
         JPanel viewCNICReportsPanel = new JPanel(new BorderLayout());
         viewCNICReportsPanel.setBorder(new EmptyBorder(1, 0, 0, 0));
 
         JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        searchBarPanel.setPreferredSize(new Dimension(300, 50));  // Adjust the height of the search bar panel
+        searchBarPanel.setPreferredSize(new Dimension(300, 50)); // Adjust the height of the search bar panel
         searchBarPanel.setBackground(Color.WHITE);
 
         JLabel searchLabel = new JLabel("Search: ");
@@ -51,17 +55,31 @@ public class C_UpdateCNICPanel {
 
         viewCNICReportsPanel.add(searchBarPanel, BorderLayout.NORTH);
 
-        String[] columnNames = {"Consumer ID", "CNIC #", "Issue Date", "Expiry Date"};
-        Object[][] data = cst.displayCNICDetail(cst.getCustomerId());
+        String[] columnNames = { "Consumer ID", "CNIC #", "Issue Date", "Expiry Date" };
+        Object[][] data = null;
+
+        try {
+            // Send request to server
+            objectOut.writeObject("getCustomerCNIC");
+
+            data = (Object[][]) objectIn.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (data == null) {
+            data = new Object[0][columnNames.length]; // Ensure correct column count
+        }
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Allow only the "Expiry Date" column to be editable (index 3)
                 return column == 3;
             }
         };
-        
+
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -138,35 +156,71 @@ public class C_UpdateCNICPanel {
                 saveButton.setBorder(BorderFactory.createEmptyBorder()); // Remove border when not hovering
             }
         });
-
-        
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = table.getSelectedRow();
-
                 if (selectedRow == -1) {
-                    JOptionPane.showMessageDialog(null, "Please select a row to update the expiry date.", "No row selected", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Please select a row to update the expiry date.",
+                            "No row selected", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
                 if (!isColumnEdited) {
-                    JOptionPane.showMessageDialog(null, "Please edit the expiry date column before saving.", "No column edited", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Please edit the expiry date column before saving.",
+                            "No column edited", JOptionPane.WARNING_MESSAGE);
                     isColumnEdited = false;
                     return;
                 }
 
-                if (cst.saveChangesToNADRADB(tableModel)) {
-                    JOptionPane.showMessageDialog(null, "Expiry date updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Failed to update expiry date. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+                // Collect updated data
+                // Object[][] updatedData = new Object[table.getRowCount()][table.getColumnCount()];
+                // for (int i = 0; i < table.getRowCount(); i++) {
+                //     for (int j = 0; j < table.getColumnCount(); j++) {
+                //         updatedData[i][j] = table.getValueAt(i, j);
+                //     }
+                // }
+
+                try {
+                    Object[][] updatedCNICData = new Object[1][columnNames.length];
+                    updatedCNICData[0] = new Object[]{
+                        table.getValueAt(selectedRow, 0), // Consumer ID
+                        table.getValueAt(selectedRow, 1), // CNIC #
+                        table.getValueAt(selectedRow, 2), // Issue Date
+                        table.getValueAt(selectedRow, 3)  // Expiry Date
+                    };
+                    objectOut.writeObject("saveCNICChanges");
+                    objectOut.writeObject(updatedCNICData); // Send the updated CNIC data
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error saving changes: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
+
+
+                // try {
+                //     // Send command to save the changes
+                //     objectOut.writeObject("saveCNICChanges");
+                //     objectOut.writeObject(updatedData);
+
+                //     // Receive server response
+                //     String response = (String) objectIn.readObject();
+
+                //     if ("success".equals(response)) {
+                //         JOptionPane.showMessageDialog(null, "Expiry dates updated successfully!",
+                //                 "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                //     } else {
+                //         JOptionPane.showMessageDialog(null, "Failed to update expiry dates. Please try again.",
+                //                 "Update Failed", JOptionPane.ERROR_MESSAGE);
+                //     }
+                // } catch (Exception ex) {
+                //     ex.printStackTrace();
+                //     JOptionPane.showMessageDialog(null, "Error sending data to server: " + ex.getMessage(),
+                //             "Error", JOptionPane.ERROR_MESSAGE);
+                // }
             }
         });
 
         buttonPanel.add(saveButton);
-
         viewCNICReportsPanel.add(buttonPanel, BorderLayout.SOUTH);
-
         return viewCNICReportsPanel;
 
     }

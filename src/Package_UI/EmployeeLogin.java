@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -130,29 +132,22 @@ public class EmployeeLogin {
         loginFrame.add(backButton, gbc);
 
         loginButton.addActionListener((ActionEvent e) -> {
-           
-
-           
-        });
-
-        loginButton.addActionListener((ActionEvent e) -> {
             String username = userField.getText();
             String password = new String(passField.getPassword());
 
-            try (Socket socket = new Socket("localhost", 12345); // Connect to server
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+           try (Socket socket = new Socket("localhost", 12345); // Connect to server
+                    ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream())) {
 
-                out.println("LOGINASEMPLOYEE");
-                out.println(username);
-                out.println(password);
+                 objectOut.writeObject("LOGINASEMPLOYEE");
+                 objectOut.writeObject(username);
+                 objectOut.writeObject(password);
 
-                String response = in.readLine();
+                 String response = (String) objectIn.readObject();
 
                 if ("SUCCESS".equals(response)) {
-                    // further functions
                     EmployeeDashBoard empDash = new EmployeeDashBoard();
-                    empDash.openEmployeeDashboard(null,socket);  // Open employee dashboard on successful login
+                    empDash.openEmployeeDashboard(null,socket, objectOut, objectIn);  // Open employee dashboard on successful login
                     loginFrame.dispose(); // Close login window after successful login
                 } else {
                     System.out.println("Login Not Successfull");
@@ -162,7 +157,7 @@ public class EmployeeLogin {
     
                 }
 
-            } catch (IOException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(loginFrame, "Server not available. Try again later.");
                 ex.printStackTrace();
             }
@@ -170,7 +165,7 @@ public class EmployeeLogin {
 
         backButton.addActionListener((ActionEvent e) -> {
             loginFrame.dispose();
-            new Lesco();
+            // new Lesco();
         });
     }
 

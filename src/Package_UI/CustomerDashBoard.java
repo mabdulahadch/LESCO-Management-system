@@ -1,4 +1,5 @@
 package Package_UI;
+
 import Package_BL.Customer;
 
 import Font.LoadFont;
@@ -7,6 +8,10 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
@@ -19,110 +24,104 @@ import javax.swing.border.Border;
 
 public class CustomerDashBoard {
 
-    public void openCustomerDashboard(Socket socket) {
-        JFrame customerFrame = new JFrame("Customer Dashboard");
-        customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        customerFrame.setBounds(350, 100, 1200, 800);
-        customerFrame.setLayout(new BorderLayout());
-        customerFrame.setResizable(false);
+    public void openCustomerDashboard(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        try {
+            JFrame customerFrame = new JFrame("Customer Dashboard");
+            customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            customerFrame.setBounds(350, 100, 1200, 800);
+            customerFrame.setLayout(new BorderLayout());
+            customerFrame.setResizable(false);
 
-        JPanel contentPanel = new JPanel();
-        CardLayout cardLayout = new CardLayout();
-        contentPanel.setLayout(cardLayout);
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setBackground(Color.WHITE);
+            buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
-        contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
-        contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
-      
+            JPanel contentPanel = new JPanel();
+            CardLayout cardLayout = new CardLayout();
+            contentPanel.setLayout(cardLayout);
 
-        String[] options = {
-            "Home",
-            "View Bill",
-            "Update CNIC Expiry Date",
-            "Logout"
-        };
+            contentPanel.add(C_HomePanel.createHomePanel(socket, objectOut, objectIn), "Home");
+            contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket, objectOut, objectIn), "ViewBill");
+            contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(socket, objectOut, objectIn), "UpdateCNIC");
 
-        Dimension buttonSize = new Dimension(700, 50);
-        final JButton[] btn = new JButton[4];
+            String[] options = {
+                    "Home",
+                    "View Bill",
+                    "Update CNIC Expiry Date",
+                    "Logout"
+            };
 
-        for (int i = 0; i < 4; i++) {
-            int index = i;
+            Dimension buttonSize = new Dimension(700, 50);
+            final JButton[] btn = new JButton[4];
 
-            btn[index] = new JButton(options[index]);
-            btn[index].setPreferredSize(buttonSize);
-            btn[index].setMaximumSize(buttonSize);
-            btn[index].setBackground(new Color(127, 192, 20));
-            btn[index].setFocusPainted(false);
-            btn[index].setForeground(Color.WHITE);
-            btn[index].setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
+            for (int i = 0; i < 4; i++) {
+                int index = i;
 
-            if (index == 0) {
-                Border leftBorder1 = BorderFactory.createMatteBorder(0, 3, 0, 0, Color.WHITE);
-                btn[index].setBorder(leftBorder1);
-            } else {
-                btn[index].setBorder(BorderFactory.createEmptyBorder());
+                btn[index] = new JButton(options[index]);
+                btn[index].setPreferredSize(buttonSize);
+                btn[index].setMaximumSize(buttonSize);
+                btn[index].setBackground(new Color(127, 192, 20));
+                btn[index].setFocusPainted(false);
+                btn[index].setForeground(Color.WHITE);
+                btn[index].setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
+
+                if (index == 0) {
+                    Border leftBorder1 = BorderFactory.createMatteBorder(0, 3, 0, 0, Color.WHITE);
+                    btn[index].setBorder(leftBorder1);
+                } else {
+                    btn[index].setBorder(BorderFactory.createEmptyBorder());
+                }
+
+                btn[index].addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        btn[index].setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                    }
+
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        if (index == 0) {
+                            btn[index].setBorder(BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(0, 3, 0, 0, Color.WHITE),
+                                    BorderFactory.createEmptyBorder()));
+                        } else {
+                            btn[index].setBorder(BorderFactory.createEmptyBorder());
+                        }
+                    }
+                });
+
+                buttonPanel.add(btn[index]);
+                buttonPanel.add(Box.createRigidArea(new Dimension(3, 0)));
+
+                btn[index].addActionListener(e -> {
+                    
+                    if (options[index].equals("Home")) {
+                        cardLayout.show(contentPanel, "Home");
+                    } else if (options[index].equals("View Bill")) {
+                        cardLayout.show(contentPanel, "ViewBill");
+                    } else if (options[index].equals("Update CNIC Expiry Date")) {
+                        cardLayout.show(contentPanel, "UpdateCNIC");
+                    } else if (options[index].equals("Logout")) {
+                        customerFrame.dispose();
+                        try {
+                            if (socket != null && !socket.isClosed()) {
+                                socket.close();
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
             }
 
-            btn[index].addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    btn[index].setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-                }
+            customerFrame.add(buttonPanel, BorderLayout.NORTH);
+            customerFrame.add(contentPanel, BorderLayout.CENTER);
 
-                @Override
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    if (index == 0) {
-                        btn[index].setBorder(BorderFactory.createCompoundBorder(
-                                BorderFactory.createMatteBorder(0, 3, 0, 0, Color.WHITE),
-                                BorderFactory.createEmptyBorder()));
-                    } else {
-                        btn[index].setBorder(BorderFactory.createEmptyBorder());
-                    }
-                }
-            });
-
-            buttonPanel.add(btn[index]);
-            buttonPanel.add(Box.createRigidArea(new Dimension(3, 0)));
-
-            // ActionListener for the buttons
-            // btn[index].addActionListener(e -> {
-            //     CardLayout cl = (CardLayout) (contentPanel.getLayout());
-            //     if (options[index].equals("Home")) {
-            //         contentPanel.add(C_HomePanel.createHomePanel(socket), "Home");
-            //         cl.show(contentPanel, "Home");
-            //     }else if (options[index].equals("View Bill")) {
-            //         contentPanel.add(C_ViewBillPanel.createViewBillPanel(socket), "ViewBill");
-            //         cl.show(contentPanel, "ViewBill");
-            //     } else if (options[index].equals("Update CNIC Expiry Date")) {
-            //         contentPanel.add(C_UpdateCNICPanel.createUpdateCNICPanel(null), "UpdateCNIC");
-            //         cl.show(contentPanel, "UpdateCNIC");
-            //     } else if (options[index].equals("Logout")) {
-            //         customerFrame.dispose();
-            //         // new Lesco();
-            //     }
-            // });
-
-            btn[index].addActionListener(e -> {
-                if (options[index].equals("Home")) {
-                    cardLayout.show(contentPanel, "Home");
-                } else if (options[index].equals("View Bill")) {
-                    cardLayout.show(contentPanel, "ViewBill");
-                } else if (options[index].equals("Update CNIC Expiry Date")) {
-                    cardLayout.show(contentPanel, "UpdateCNIC");
-                } else if (options[index].equals("Logout")) {
-                    customerFrame.dispose();
-                }
-            });
+            customerFrame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        customerFrame.add(buttonPanel, BorderLayout.NORTH);
-        customerFrame.add(contentPanel, BorderLayout.CENTER);
-
-        customerFrame.setVisible(true);
     }
-
 
 }

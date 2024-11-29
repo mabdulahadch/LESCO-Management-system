@@ -5,11 +5,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import javax.swing.table.DefaultTableModel;
 
 public class LescoServer {
 
@@ -31,98 +32,148 @@ public class LescoServer {
 }
 
 class ClientHandler extends Thread {
-
     private Socket clientSocket;
+    private ObjectOutputStream objectOut;
+    private ObjectInputStream objectIn;
 
     public ClientHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+        try {
+            objectOut = new ObjectOutputStream(clientSocket.getOutputStream());
+            objectIn = new ObjectInputStream(clientSocket.getInputStream());
+        } catch (IOException e) {
+            System.err.println("Error initializing streams: " + e.getMessage());
+            
+        }
     }
 
     @Override
     public void run() {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
+        try {
             Customer loggedInCustomer = null;
             Employee loggedInEmployee = null;
 
             while (true) {
-                String command = in.readLine();
 
+                String command = (String) objectIn.readObject();
+                //System.out.println("Received command: " + command);
+                if (command == null)
+                    break;
+
+
+
+                // customer
                 if ("LOGINASCUSTOMER".equalsIgnoreCase(command)) {
-                    String userID = in.readLine();
-                    String userCNIC = in.readLine();
+
+                    String userID = (String) objectIn.readObject();
+                    String userCNIC = (String) objectIn.readObject();
                     System.out.println("Received UserID: " + userID + ", UserCNIC: " + userCNIC);
 
-                    loggedInCustomer = custLogin(userID, userCNIC);
+                    loggedInCustomer = custLogin(userID, userCNIC); // Log the user in
                     if (loggedInCustomer != null) {
-                        out.println("SUCCESS");
+                        objectOut.writeObject("SUCCESS"); // Send login success to client
                         System.out.println("Login successful for UserID: " + userID);
                     } else {
-                        out.println("FAILURE");
+                        objectOut.writeObject("FAILURE"); // Send login failure to client
                         System.out.println("Login failed for UserID: " + userID);
                     }
                 } else if ("getName".equalsIgnoreCase(command)) {
                     if (loggedInCustomer != null) {
-                        out.println(loggedInCustomer.getName()); // Respond with the customer's name
+                        objectOut.writeObject(loggedInCustomer.getName()); // Send name to client
                         System.out.println("Sent Name: " + loggedInCustomer.getName());
                     } else {
-                        out.println("ERROR: Not logged in");
+                        objectOut.writeObject("ERROR: Not logged in"); // Send error if not logged in
                         System.out.println("Client requested name but is not logged in.");
                     }
                 } else if ("getCustomerBill".equalsIgnoreCase(command)) {
-
-                    try (ObjectOutputStream objectOut = new ObjectOutputStream(clientSocket.getOutputStream())) {
-                        Object[][] billData = loggedInCustomer.readDataFromBillingDB();
-                        objectOut.writeObject(billData);
-                        objectOut.flush();
-                        System.out.println("Sent bill data object to the client.");
+                    if (loggedInCustomer != null) {
+                        try {
+                            Object[][] billData = loggedInCustomer.readDataFromBillingDB(); // Fetch bill data
+                            objectOut.writeObject(billData); // Send bill data to client
+                            System.out.println("Sent bill data object to the client.");
+                        } catch (Exception e) {
+                            objectOut.writeObject("ERROR: Unable to fetch bill data.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                    }
+                } else if ("getCustomerCNIC".equalsIgnoreCase(command)) {
+                    try {
+                        // Fetch CNIC details
+                        Object[][] cnicData = loggedInCustomer.displayCNICDetail(loggedInCustomer.getCustomerId());
+                        objectOut.writeObject(cnicData); // Send CNIC data to client
+                        System.out.println("Sent CNIC data object to the client.");
                     } catch (Exception e) {
+                        objectOut.writeObject("ERROR: Unable to fetch CNIC data.");
+                        e.printStackTrace();
+                    }
+                } else if ("saveCNICChanges".equalsIgnoreCase(command)) {
+                    System.out.println("saveCNICChanges");
+                    try {
+                        String[] columnNames = { "Consumer ID", "CNIC #", "Issue Date", "Expiry Date" };
+                        Object[][] updatedCNICData = (Object[][]) objectIn.readObject();
+                        DefaultTableModel updatedModel = new DefaultTableModel(updatedCNICData, columnNames);
+                        boolean updateSuccessful = loggedInCustomer.saveChangesToNADRADB(updatedModel);
+                        System.out.println(updateSuccessful);
+
+                        if (updateSuccessful) {
+                            objectOut.writeObject("success");
+                            System.out.println("CNIC data updated successfully.");
+                        } else {
+                            objectOut.writeObject("failure");
+                            System.out.println("Failed to update CNIC data.");
+                        }
+                    } catch (Exception e) {
+                        objectOut.writeObject("ERROR: Unable to update CNIC data.");
+                        e.printStackTrace();
                     }
                 }
-                
-                // else {
-                //     out.println("ERROR: Not logged in");
-                //     System.out.println("Client requested name but is not logged in.");
-                // }
 
 
-                
+
+
+                // employee
                 if ("LOGINASEMPLOYEE".equalsIgnoreCase(command)) {
-                    String userName = in.readLine();
-                    String password = in.readLine();
+                    String userName = (String) objectIn.readObject();
+                    String password = (String) objectIn.readObject();
                     System.out.println("Received UserID: " + userName + ", UserCNIC: " + password);
 
                     loggedInEmployee = empLogin(userName, password);
                     if (loggedInEmployee != null) {
-                        out.println("SUCCESS");
+                        objectOut.writeObject("SUCCESS");
                         System.out.println("Login successful for UserID: " + userName);
                     } else {
-                        out.println("FAILURE");
+                        objectOut.writeObject("FAILURE");
                         System.out.println("Login failed for UserID: " + userName);
                     }
                 } else if ("getUserName".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
-                        out.println(loggedInEmployee.getUserName()); // Respond with the customer's name
+                        objectOut.writeObject(loggedInEmployee.getUserName()); // Respond with the customer's
+                        // name
                         System.out.println("Sent Name: " + loggedInEmployee.getUserName());
                     } else {
-                        out.println("ERROR: Not logged in");
+                        objectOut.writeObject("ERROR: Not logged in");
                         System.out.println("Client requested name but is not logged in.");
                     }
-                } else if ("getCustomerBill".equalsIgnoreCase(command)) {
-
                 }
 
-                // ifClientIsCustomer(command, in, out, loggedInCustomer);
-                // ifClientIsEmployee(command, in, out, loggedInEmployee);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Error handling client: " + e.getMessage());
         } finally {
             try {
-                // clientSocket.close();
-            } catch (Exception e) {
-                System.out.println("Error closing client socket: " + e.getMessage());
+                if (objectIn != null) {
+                    objectIn.close();
+                }
+                if (objectOut != null) {
+                    objectOut.close();
+                }
+                if (clientSocket != null && !clientSocket.isClosed()) {
+                    clientSocket.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error closing client resources: " + e.getMessage());
             }
         }
     }
@@ -192,5 +243,4 @@ class ClientHandler extends Thread {
         }
         return false;
     }
-
 }

@@ -6,6 +6,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import javax.swing.BorderFactory;
@@ -18,7 +20,7 @@ import Package_BL.Employee;
 
 public class EmployeeDashBoard {
 
-    public void openEmployeeDashboard(Employee emp,Socket socket) {
+    public void openEmployeeDashboard(Employee emp,Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
 
         JFrame employeeFrame = new JFrame("Employee Dashboard");
         employeeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,12 +30,18 @@ public class EmployeeDashBoard {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS)); // Align buttons vertically
-        //buttonPanel
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new CardLayout());
-        contentPanel.add(E_HomePanel.createHomePanel(socket));
+        CardLayout cardLayout = new CardLayout();
+        contentPanel.setLayout(cardLayout);
+
+        contentPanel.add(E_HomePanel.createHomePanel(socket, objectOut, objectIn), "Home");
+
+
+
+
+        
 
         String[] options = {
             "Home",
@@ -78,44 +86,42 @@ public class EmployeeDashBoard {
             buttonPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
             optionButton.addActionListener(e -> {
-                CardLayout cl = (CardLayout) (contentPanel.getLayout());
 
                 switch (option) {
                     case "Home" -> {  // Done
-                        contentPanel.add(E_HomePanel.createHomePanel(socket), "HomePanel");
-                        cl.show(contentPanel, "HomePanel");
+                        cardLayout.show(contentPanel, "Home");
                     }
                     case "Add New Customer" -> {  // Done
                         contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(emp), "AddCustomerPanel");
-                        cl.show(contentPanel, "AddCustomerPanel");
+                        cardLayout.show(contentPanel, "AddCustomerPanel");
                     }
                     case "Add New Billing Info" -> { // Done
                         contentPanel.add(E_AddBillPanel.createBillingInfoPanel(emp), "BillingInfoPanel");
-                        cl.show(contentPanel, "BillingInfoPanel");
+                        cardLayout.show(contentPanel, "BillingInfoPanel");
                     }
                     case "Edit Tariff Tax Info" -> { //Done
                         contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(emp), "TariffTaxInfoPanel");
-                        cl.show(contentPanel, "TariffTaxInfoPanel");
+                        cardLayout.show(contentPanel, "TariffTaxInfoPanel");
                     }
                     case "Edit Customer Info" -> { //Done
                         contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
-                        cl.show(contentPanel, "EditCustomerInfoPanel");
+                        cardLayout.show(contentPanel, "EditCustomerInfoPanel");
                     }
                     case "Edit Customer Bills" -> {   // Done
                         contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(emp), "EditCustomerBillsPanel");
-                        cl.show(contentPanel, "EditCustomerBillsPanel");
+                        cardLayout.show(contentPanel, "EditCustomerBillsPanel");
                     }
                     case "View Bill Reports" -> { // Done
                         contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(emp), "ViewReportsOfBillPanel");
-                        cl.show(contentPanel, "ViewReportsOfBillPanel");
+                        cardLayout.show(contentPanel, "ViewReportsOfBillPanel");
                     }
                     case "View CNIC Reports" -> {  // Done 
                         contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(emp), "ViewCNICReportsPanel");
-                        cl.show(contentPanel, "ViewCNICReportsPanel");
+                        cardLayout.show(contentPanel, "ViewCNICReportsPanel");
                     }
                     case "Update Password" -> {  // Done
                         contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(emp), "UpdatePasswordPanel");
-                        cl.show(contentPanel, "UpdatePasswordPanel");
+                        cardLayout.show(contentPanel, "UpdatePasswordPanel");
                     }
                     case "Logout" -> {  // Done
                         employeeFrame.dispose();

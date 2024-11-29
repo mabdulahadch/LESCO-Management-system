@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -32,7 +33,7 @@ import javax.swing.table.TableRowSorter;
 
 public class C_ViewBillPanel {
 
-    public static JPanel createViewBillPanel(Socket socket) {
+    public static JPanel createViewBillPanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
 
         JPanel viewCustomerBillsPanel = new JPanel(new BorderLayout());
         viewCustomerBillsPanel.setBorder(new EmptyBorder(1, 0, 0, 0));
@@ -58,13 +59,14 @@ public class C_ViewBillPanel {
         Object[][] data = null;
 
         try {
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            writer.println("getCustomerBill");
+            // Request customer bills from the server
+            objectOut.writeObject("getCustomerBill");
+            objectOut.flush(); // Ensure the message is sent
 
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            data = (Object[][]) objectInputStream.readObject();
+            // Receive the data from the server
+            data = (Object[][]) objectIn.readObject();
 
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
