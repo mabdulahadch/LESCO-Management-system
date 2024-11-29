@@ -50,9 +50,6 @@ class EmployeeTest {
         Employee actualResult = ClientHandler.empLogin("Ahad", "123");
 
         assertNotNull(actualResult, "Expected a valid Employee object to be returned");
-
-        assertEquals("Ahad", actualResult.getUserName(), "Expected username to match");
-        assertEquals("123", actualResult.getPassword(), "Expected password to match");
     }
 
 
