@@ -119,6 +119,7 @@ class ClientHandler extends Thread {
 
                         if (updateSuccessful) {
                             objectOut.writeObject("success");
+                            objectOut.flush();
                             System.out.println("CNIC data updated successfully.");
                         } else {
                             objectOut.writeObject("failure");
@@ -161,21 +162,21 @@ class ClientHandler extends Thread {
             }
         } catch (Exception e) {
             System.out.println("Error handling client: " + e.getMessage());
-        } finally {
-            try {
-                if (objectIn != null) {
-                    objectIn.close();
-                }
-                if (objectOut != null) {
-                    objectOut.close();
-                }
-                if (clientSocket != null && !clientSocket.isClosed()) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                System.out.println("Error closing client resources: " + e.getMessage());
-            }
-        }
+        }// } finally {
+        //     try {
+        //         if (objectIn != null) {
+        //             objectIn.close();
+        //         }
+        //         if (objectOut != null) {
+        //             objectOut.close();
+        //         }
+        //         if (clientSocket != null && !clientSocket.isClosed()) {
+        //             clientSocket.close();
+        //         }
+        //     } catch (IOException e) {
+        //         System.out.println("Error closing client resources: " + e.getMessage());
+        //     }
+        //}
     }
 
     public static Customer custLogin(String userID, String userCNIC) {

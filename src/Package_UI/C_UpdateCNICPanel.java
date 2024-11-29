@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -156,6 +157,55 @@ public class C_UpdateCNICPanel {
                 saveButton.setBorder(BorderFactory.createEmptyBorder()); // Remove border when not hovering
             }
         });
+       
+        // saveButton.addActionListener(new ActionListener() {
+        //     @Override
+        //     public void actionPerformed(ActionEvent e) {
+        //         int selectedRow = table.getSelectedRow();
+        //         if (selectedRow == -1) {
+        //             JOptionPane.showMessageDialog(null, "Please select a row to update the expiry date.",
+        //                     "No row selected", JOptionPane.ERROR_MESSAGE);
+        //             return;
+        //         }
+
+        //         if (!isColumnEdited) {
+        //             JOptionPane.showMessageDialog(null, "Please edit the expiry date column before saving.",
+        //                     "No column edited", JOptionPane.WARNING_MESSAGE);
+        //             isColumnEdited = false;
+        //             return;
+        //         }
+        //         try {
+        //             Object[][] updatedCNICData = new Object[1][columnNames.length];
+        //             System.out.println(Arrays.deepToString(updatedCNICData));
+        //             updatedCNICData[0] = new Object[]{
+        //                 table.getValueAt(selectedRow, 0), // Consumer ID
+        //                 table.getValueAt(selectedRow, 1), // CNIC #
+        //                 table.getValueAt(selectedRow, 2), // Issue Date
+        //                 table.getValueAt(selectedRow, 3)  // Expiry Date
+        //             };
+                
+        //             // Send the command and data to the server
+        //             objectOut.writeObject("saveCNICChanges");
+        //             objectOut.flush(); // Ensure command is sent
+        //             objectOut.writeObject(updatedCNICData);
+        //             objectOut.flush(); // Ensure data is sent
+                
+        //             // Optionally, wait for server response
+        //             String response = (String) objectIn.readObject();
+        //             if ("success".equalsIgnoreCase(response)) {
+        //                 JOptionPane.showMessageDialog(null, "Changes saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        //             } else if ("failure".equalsIgnoreCase(response)) {
+        //                 JOptionPane.showMessageDialog(null, "Failed to save changes.", "Error", JOptionPane.ERROR_MESSAGE);
+        //             } else {
+        //                 JOptionPane.showMessageDialog(null, response, "Server Response", JOptionPane.INFORMATION_MESSAGE);
+        //             }
+        //         } catch (Exception ex) {
+        //             ex.printStackTrace(); // Log the error for debugging
+        //             JOptionPane.showMessageDialog(null, "Error saving changes: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        //         }
+                
+        //     }
+        // });
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -165,23 +215,21 @@ public class C_UpdateCNICPanel {
                             "No row selected", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
+        
                 if (!isColumnEdited) {
                     JOptionPane.showMessageDialog(null, "Please edit the expiry date column before saving.",
                             "No column edited", JOptionPane.WARNING_MESSAGE);
-                    isColumnEdited = false;
                     return;
                 }
-
-                // Collect updated data
-                // Object[][] updatedData = new Object[table.getRowCount()][table.getColumnCount()];
-                // for (int i = 0; i < table.getRowCount(); i++) {
-                //     for (int j = 0; j < table.getColumnCount(); j++) {
-                //         updatedData[i][j] = table.getValueAt(i, j);
-                //     }
-                // }
-
+        
                 try {
+                    // Debug selected row and column data
+                    System.out.println("Selected Row: " + selectedRow);
+                    for (int i = 0; i < table.getColumnCount(); i++) {
+                        System.out.println("Column " + i + ": " + table.getValueAt(selectedRow, i));
+                    }
+        
+                    // Prepare updated CNIC data
                     Object[][] updatedCNICData = new Object[1][columnNames.length];
                     updatedCNICData[0] = new Object[]{
                         table.getValueAt(selectedRow, 0), // Consumer ID
@@ -189,35 +237,40 @@ public class C_UpdateCNICPanel {
                         table.getValueAt(selectedRow, 2), // Issue Date
                         table.getValueAt(selectedRow, 3)  // Expiry Date
                     };
+                    System.out.println("Sending Data: " + Arrays.deepToString(updatedCNICData));
+        
+                    // Ensure socket is connected
+                    if (socket == null || socket.isClosed()) {
+                        JOptionPane.showMessageDialog(null, "Connection to the server is closed.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+                    System.out.println(1);
+                       
+                        return;
+                    }
+        
+                    // Send command and data to the server
                     objectOut.writeObject("saveCNICChanges");
-                    objectOut.writeObject(updatedCNICData); // Send the updated CNIC data
+                    objectOut.flush();
+                    objectOut.writeObject(updatedCNICData);
+                    objectOut.flush();
+                    
+                    System.out.println(1);
+                    // Wait for server response
+                    String response = (String) objectIn.readObject();
+                    if ("success".equalsIgnoreCase(response)) {
+                        JOptionPane.showMessageDialog(null, "Changes saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else if ("failure".equalsIgnoreCase(response)) {
+                        JOptionPane.showMessageDialog(null, "Failed to save changes.", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, response, "Server Response", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Error saving changes: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace(); // Log for debugging
+                    JOptionPane.showMessageDialog(null, "Error saving changes: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-
-                // try {
-                //     // Send command to save the changes
-                //     objectOut.writeObject("saveCNICChanges");
-                //     objectOut.writeObject(updatedData);
-
-                //     // Receive server response
-                //     String response = (String) objectIn.readObject();
-
-                //     if ("success".equals(response)) {
-                //         JOptionPane.showMessageDialog(null, "Expiry dates updated successfully!",
-                //                 "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                //     } else {
-                //         JOptionPane.showMessageDialog(null, "Failed to update expiry dates. Please try again.",
-                //                 "Update Failed", JOptionPane.ERROR_MESSAGE);
-                //     }
-                // } catch (Exception ex) {
-                //     ex.printStackTrace();
-                //     JOptionPane.showMessageDialog(null, "Error sending data to server: " + ex.getMessage(),
-                //             "Error", JOptionPane.ERROR_MESSAGE);
-                // }
             }
         });
+        
 
         buttonPanel.add(saveButton);
         viewCNICReportsPanel.add(buttonPanel, BorderLayout.SOUTH);
