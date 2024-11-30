@@ -115,10 +115,13 @@ public class E_ChangePasswordPanel {
 
                 if (emp.isValidPass(currentPassword)) {
 
-                    emp.updateEmpPassword(newPassword);
-                    JOptionPane.showMessageDialog(null, "Password updated successfully!");
-                    cnicField.setText("");
-                    nameField.setText("");
+                    if(emp.updateEmpPassword(newPassword))
+                    {
+                        JOptionPane.showMessageDialog(null, "Password updated successfully!");
+                        cnicField.setText("");
+                        nameField.setText("");
+                    }
+
                 } else {
                     JOptionPane.showMessageDialog(null, "Current password is incorrect.", "Error", JOptionPane.ERROR_MESSAGE);
                 }

@@ -60,7 +60,7 @@ public class Employee {
         return this.getPassword().equals(currentPass);
     }
 
-    public void updateEmpPassword(String newPass) {
+    public boolean updateEmpPassword(String newPass) {
 
         this.setPassword(newPass);
 
@@ -80,7 +80,7 @@ public class Employee {
             }
         } catch (IOException e) {
             System.out.println("Error reading the file: " + e.getMessage());
-            return;
+            return false;
         }
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectTxtFiles.EmployeesFile))) {
@@ -93,6 +93,7 @@ public class Employee {
         }
 
         System.out.println("Password updated successfully.");
+        return true;
 
     }
 
@@ -153,10 +154,6 @@ public class Employee {
 
     public Object[][] viewPaid_UnpaidBillReport() {
         return BillManagment.calulateAmountUpdainANDPaidBills();
-    }
-
-    public void changeBillStatus(Scanner input) {
-        BillManagment.changeBillStatus(input);
     }
 
     public Object[][] readDataFromCustomerDB() {

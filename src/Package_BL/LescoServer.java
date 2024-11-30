@@ -158,7 +158,17 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("ERROR: Not logged in");
                         System.out.println("Client requested name but is not logged in.");
                     }
+                } else if ("getBillName".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        objectOut.writeObject(loggedInEmployee.getUserName()); // Respond with the customer's
+                        // name
+                        System.out.println("Sent Name: " + loggedInEmployee.getUserName());
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        System.out.println("Client requested name but is not logged in.");
+                    }
                 }
+
 
             }
         } catch (Exception e) {

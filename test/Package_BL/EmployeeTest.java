@@ -21,7 +21,6 @@ class EmployeeTest {
             File customerFile = new File(CUSTOMERFILE);
             File employeeFile = new File(EMPLOYEEFILE);
 
-            // Create the files if they do not exist
             if (!customerFile.exists()) {
                 customerFile.createNewFile();
             }
@@ -39,16 +38,54 @@ class EmployeeTest {
     }
 
     @Test
+    void validateEmployeeUserName() {
+        String actualResult = employee.getUserName();
+        String expectedResult = "Ahad";
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void validateEmployeePassword() {
+        String actualResult = employee.getPassword();
+        String expectedResult = "123";
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void isValidPassword() {
+        Boolean actualResult = employee.isValidPass("123");
+        Boolean expectedResult = true;
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void updateEmployeePassword() {
+        Boolean actualResult = employee.updateEmpPassword("321");
+        Boolean expectedResult = true;
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void validateEmployeeFileFormat() {
+        String actualResult = employee.toFileFormat();
+        String expectedResult = "Ahad,123";
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
     void validateEmployeeInvalid() {
         Employee actualResult = ClientHandler.empLogin("XYZ", "666");
-
         assertNull(actualResult, "Expected invalid credentials to fail validation");
     }
 
     @Test
     void validateEmployeeValid() {
         Employee actualResult = ClientHandler.empLogin("Ahad", "123");
-
         assertNotNull(actualResult, "Expected a valid Employee object to be returned");
     }
 
@@ -79,11 +116,25 @@ class EmployeeTest {
 
     @Test
     void addBillingInfoInvalid() {
-        Boolean actualResult = employee.addBillingInfo("0003", 500, 0);
+        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
         Boolean expectedResult = false;
 
-        assertEquals(expectedResult, actualResult);
+        assertEquals(expectedResult, actualResult, "Enter Correct (Current Regular Units cannot be smaller than Previous Consumed Units)");
     }
+
+    @Test
+    void alreadyExistBillInfoInvalid() {
+        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
+        Boolean expectedResult = true;
+
+        assertEquals(expectedResult, actualResult, "This Month's Bill is already added for Customer: 0003");
+    }
+
+//    @Test
+//    void testCNICExpiresIn30days(){
+//        Object[][] data = employee.CNICExpiresIn30days();
+//
+//    }
 
 
 }

@@ -185,7 +185,7 @@ public class tempMain {
                             case 4 ->
                                 System.out.println("emp.updateCustomerInfo(input);");
                             case 5 ->
-                                emp.changeBillStatus(input); // also update in the CustomerInfoFile that consumer Peak Hours + comsumer regualr Hours
+                                System.out.println("emp.changeBillStatus(input)"); // also update in the CustomerInfoFile that consumer Peak Hours + comsumer regualr Hours
                             case 6 ->
                                 System.out.println("emp.updatePassword(input);");
                             case 7 ->
