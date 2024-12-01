@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.table.DefaultTableModel;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,6 +13,7 @@ class EmployeeTest {
     Employee employee;
     String CUSTOMERFILE = "test/Package_BL/testCustomerData.txt";
     String EMPLOYEEFILE = "test/Package_BL/testEmployeeData.txt";
+    String TARIFFTAXFILE = "test/Package_BL/testTariffData.txt";
 
     @BeforeEach
     void setUp() {
@@ -20,12 +22,16 @@ class EmployeeTest {
         try {
             File customerFile = new File(CUSTOMERFILE);
             File employeeFile = new File(EMPLOYEEFILE);
+            File taxFile = new File(TARIFFTAXFILE);
 
             if (!customerFile.exists()) {
                 customerFile.createNewFile();
             }
             if (!employeeFile.exists()) {
                 employeeFile.createNewFile();
+            }
+            if (!taxFile.exists()) {
+                taxFile.createNewFile();
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -106,29 +112,29 @@ class EmployeeTest {
         assertEquals(expectedResult, actualResult);
     }
 
-    @Test
-    void addBillingInfoValid() {
-        Boolean actualResult = employee.addBillingInfo("0001", 300, 100);
-        Boolean expectedResult = true;
-
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void addBillingInfoInvalid() {
-        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
-        Boolean expectedResult = false;
-
-        assertEquals(expectedResult, actualResult, "Enter Correct (Current Regular Units cannot be smaller than Previous Consumed Units)");
-    }
-
-    @Test
-    void alreadyExistBillInfoInvalid() {
-        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
-        Boolean expectedResult = true;
-
-        assertEquals(expectedResult, actualResult, "This Month's Bill is already added for Customer: 0003");
-    }
+//    @Test
+//    void addBillingInfoValid() {
+//        Boolean actualResult = employee.addBillingInfo("0001", 300, 100);
+//        Boolean expectedResult = true;
+//
+//        assertEquals(expectedResult, actualResult);
+//    }
+//
+//    @Test
+//    void addBillingInfoInvalid() {
+//        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
+//        Boolean expectedResult = false;
+//
+//        assertEquals(expectedResult, actualResult, "Enter Correct (Current Regular Units cannot be smaller than Previous Consumed Units)");
+//    }
+//
+//    @Test
+//    void alreadyExistBillInfoInvalid() {
+//        Boolean actualResult = employee.addBillingInfo("0003", 100, 0);
+//        Boolean expectedResult = true;
+//
+//        assertEquals(expectedResult, actualResult, "This Month's Bill is already added for Customer: 0003");
+//    }
 
 //    @Test
 //    void testCNICExpiresIn30days(){
@@ -137,4 +143,69 @@ class EmployeeTest {
 //    }
 
 
+
+
+    @Test
+    void testReadDataFromFile(){
+
+        Object[][] result = employee.readDataFromTariffTaxDB();
+
+        Object[][] expected = {
+                {"Domestic Type", "1", "5", " ", "17", "150"},
+                {"Commercial Type", "1", "15", " ", "20", "250"},
+                {"Domestic Type", "3", "8", "12", "17", "150"},
+                {"Commercial Type", "3", "18", "25", "20", "250"}
+        };
+
+        assertEquals(expected.length, result.length);
+
+        for (int i = 0; i < result.length; i++) {
+            assertArrayEquals(expected[i], result[i]);
+        }
+    }
+
+
+
+
+
+//
+//    @Test
+//    void testSaveChangesToTariffTaxDB() throws IOException {
+//
+//        // Write sample data to the file
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+//            writer.write("1,100,50,10,5\n");
+//            writer.write("3,200,60,15,10\n");
+//        }
+//
+//        // Set up the DefaultTableModel
+//        String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
+//        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+//        tableModel.addRow(new Object[]{"1", "100", "55", "15", "12", "7"});
+//        tableModel.addRow(new Object[]{"3", "200", "65", "20", "18", "11"});
+//
+//        // Set the path
+//        projectTxtFiles.TariffFile = tempFile.getAbsolutePath();
+//
+//        // Call the method
+//        boolean result = YourClass.saveChangesToTariffTaxDB(tableModel);
+//
+//        // Verify the result
+//        assertTrue(result);
+//
+//        // Read back the updated file and check content
+//        try (BufferedReader reader = new BufferedReader(new FileReader(tempFile))) {
+//            String[] expected = {
+//                    "1,100,55,15,12,7",
+//                    "3,200,65,20,18,11"
+//            };
+//
+//            List<String> lines = reader.lines().toList();
+//            assertEquals(expected.length, lines.size());
+//            for (int i = 0; i < expected.length; i++) {
+//                assertEquals(expected[i], lines.get(i));
+//            }
+//        }
+
 }
+

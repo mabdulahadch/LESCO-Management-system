@@ -55,7 +55,7 @@ public class E_UpdateTarrifTax {
         tariffTaxInfoPanel.add(searchBarPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"Consumer Type", "Meter Type", "Regular Units", "Peak Units", "Tax %", "Fixed Tax"};
-        Object[][] data = TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
+        Object[][] data = emp.readDataFromTariffTaxDB();
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override

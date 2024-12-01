@@ -144,6 +144,10 @@ public class Employee {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
 
+    public Object[][] readDataFromTariffTaxDB() {
+        return TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
+    }
+
     public boolean saveChangesToBillingDB(DefaultTableModel tableModel, String latestEditableMonth) {
         return BillManagment.saveChangesToBillingDB(tableModel,latestEditableMonth);
     }
