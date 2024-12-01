@@ -10,7 +10,7 @@ public class projectTxtFiles {
 //    public static final String FILE_NAME5 = "src/pkg22l_7852_assign_1/BillingInfo.txt";
     
     public static final String EmployeesFile = "src/Package_DB/EmployeesData.txt";
-    public static final String CustomerFile = "src/Package_DB/CustomerInfo.txt";    
+    public static String CustomerFile = "src/Package_DB/CustomerInfo.txt";
     public static final String NadraFile = "src/Package_DB/NADRADB.txt";    
     public static final String TariffFile = "src/Package_DB/TrafficTaxInfo.txt";    
     public static final String BillingFile = "src/Package_DB/BillingInfo.txt";
