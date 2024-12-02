@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "CustomerClient",
+            "request": "launch",
+            "mainClass": "Package_BL.CustomerClient",
+            "projectName": "LESCO-Management-system_3ebe8b43"
+        },
+        {
+            "type": "java",
+            "name": "EmployeeClient",
+            "request": "launch",
+            "mainClass": "Package_BL.EmployeeClient",
+            "projectName": "LESCO-Management-system_3ebe8b43"
+        },
+        {
+            "type": "java",
+            "name": "LescoServer",
+            "request": "launch",
+            "mainClass": "Package_BL.LescoServer",
+            "projectName": "LESCO-Management-system_3ebe8b43"
+        },
+        {
+            "type": "java",
+            "name": "JUnit Test",
+            "request": "launch",
+            "mainClass": "",
+            "projectName": "LESCO-MANAGEMENT-SYSTEM",
+            "classPaths": [
+                "C:/Users/tower/OneDrive/Documents/GitHub/LESCO-Management-system/lib/junit-jupiter-api-5.9.2.jar"
+            ]
+        }
+    ]
+}
