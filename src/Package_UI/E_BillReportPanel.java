@@ -7,8 +7,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -23,7 +29,7 @@ import javax.swing.table.TableRowSorter;
 
 public class E_BillReportPanel {
     
-    public static JPanel createViewReportsOfBillPanel(Employee emp) {
+    public static JPanel createViewReportsOfBillPanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
 
         // Make two coloms and display the status  ( paid and Unpaid)
         JPanel viewReportsOfBillPanel = new JPanel(new BorderLayout());
@@ -45,7 +51,26 @@ public class E_BillReportPanel {
         viewReportsOfBillPanel.add(searchBarPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"Total Count", "Total Amount", "Status"};
-        Object[][] data = emp.viewPaid_UnpaidBillReport();
+        Object[][] data = null;
+
+try {
+    objectOut.writeObject("readBillReport");
+    objectOut.flush();
+    Object response = objectIn.readObject();
+    if (response instanceof Object[][]) {
+        data = (Object[][]) response;
+    } else if (response instanceof String && ((String) response).startsWith("ERROR")) {
+        JOptionPane.showMessageDialog(null, "Error from server: " + response,
+                "Error", JOptionPane.ERROR_MESSAGE);
+    } else {
+        JOptionPane.showMessageDialog(null, "Unexpected response from server.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+    }
+} catch (IOException | ClassNotFoundException e) {
+    e.printStackTrace();
+    JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+}
 
         //DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {

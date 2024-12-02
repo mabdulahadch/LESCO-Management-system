@@ -16,6 +16,7 @@ import java.net.Socket;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -60,16 +61,35 @@ public class E_EditCustomerInfo {
         Object[][] data = null;//emp.readDataFromCustomerDB();
 
         
-        try {
-            objectOut.writeObject("readDataFromCustomerDB");
-            objectOut.flush(); 
-            data = (Object[][]) objectIn.readObject();
+try {
+    objectOut.writeObject("readDataFromCustomerDB");
+    objectOut.flush();
+    Object response = objectIn.readObject();
+    if (response instanceof Object[][]) {
+        data = (Object[][]) response;
+    } else if (response instanceof String && ((String) response).startsWith("ERROR")) {
+        JOptionPane.showMessageDialog(null, "Error from server: " + response,
+                "Error", JOptionPane.ERROR_MESSAGE);
+    } else {
+        JOptionPane.showMessageDialog(null, "Unexpected response from server.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+    }
+} catch (IOException | ClassNotFoundException e) {
+    e.printStackTrace();
+    JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+}
 
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+// Populate data in UI if available
+if (data != null) {
+    JTable table = new JTable(data, columnNames);
+    JScrollPane scrollPane = new JScrollPane(table);
+    JFrame frame = new JFrame("Customer Database");
+    frame.add(scrollPane);
+    frame.setSize(800, 400);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setVisible(true);
+}
 
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
@@ -201,12 +221,39 @@ public class E_EditCustomerInfo {
                     return;
                 }
 
-                // if (emp.saveChangesToCustomerDB(tableModel)) {
-                //     JOptionPane.showMessageDialog(null, "Customer Data updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                // } else {
-                //     JOptionPane.showMessageDialog(null, "Failed to update Customer Data. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-                // }
-            }
+                try {
+                    DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+                    int rowCount = tableModel.getRowCount();
+                    int colCount = tableModel.getColumnCount();
+                
+                    // Convert table model to Object[][]
+                    Object[][] updatedData = new Object[rowCount][colCount];
+                    for (int i = 0; i < rowCount; i++) {
+                        for (int j = 0; j < colCount; j++) {
+                            updatedData[i][j] = tableModel.getValueAt(i, j);
+                        }
+                    }
+                    objectOut.writeObject("saveChangesToCustomerDB");
+                    objectOut.writeObject(updatedData);
+                    objectOut.flush();
+            
+                    Object response = objectIn.readObject();
+                    if (response instanceof String && ((String) response).equalsIgnoreCase("success")) {
+                        JOptionPane.showMessageDialog(null, "Customer Data updated successfully!", 
+                            "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                    } else if (response instanceof String && response.toString().toLowerCase().contains("error")) {
+                        JOptionPane.showMessageDialog(null, "Error: " + response.toString(), 
+                            "Update Failed", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Unexpected response from server.", 
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (IOException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error communicating with server: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }                
         });
         removeButton.addActionListener(new ActionListener() {
             @Override

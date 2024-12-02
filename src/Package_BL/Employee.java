@@ -60,7 +60,7 @@ public class Employee {
         return this.getPassword().equals(currentPass);
     }
 
-    public void updateEmpPassword(String newPass) {
+    public boolean updateEmpPassword(String newPass) {
 
         this.setPassword(newPass);
 
@@ -80,7 +80,7 @@ public class Employee {
             }
         } catch (IOException e) {
             System.out.println("Error reading the file: " + e.getMessage());
-            return;
+            return false;
         }
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectTxtFiles.EmployeesFile))) {
@@ -93,13 +93,12 @@ public class Employee {
         }
 
         System.out.println("Password updated successfully.");
+        return true;
 
     }
 
     public String addCustomerDetails(String FILE_NAME, String cnic, String name, String address, String phoneNumber, String customerType, String meterType) {
-
         while (true) {
-
             if (cnic.length() != 13 || !cnic.matches("\\d+")) {
                 return "Invalid CNIC number!";
             } else if (!NADRA.isCNICValidInNADRADB(cnic)) {
@@ -108,27 +107,28 @@ public class Employee {
                 break;
             }
         }
-
+    
         if (Customer.getMeterCountForCNIC(cnic, FILE_NAME) >= 3) {
             return "Not Allowed! Maximum 3 meters allowed per CNIC.";
         }
-
+    
         Customer customer = new Customer(cnic, name, address, phoneNumber, customerType, meterType);
-
+    
         writeCustomerDataInFile(customer, FILE_NAME);
-        return "true";
+    
+        // Return SUCCESS to match the server condition
+        return "SUCCESS";
     }
-
+    
     private void writeCustomerDataInFile(Customer customer, String FILE_NAME) {
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
             writer.write(customer.toFileFormat());
             writer.newLine();
-            //System.out.println("Customer added successfully. Customer ID: " + customer.getCustomerId());
         } catch (IOException e) {
-            System.out.println("Error while writing to the file.");
+            System.out.println("Error while writing to the file: " + e.getMessage());
         }
     }
+    
 
     public Object[][] CNICExpiresIn30days() {
         return NADRA.getCNICExpiresIn30days();
@@ -142,6 +142,12 @@ public class Employee {
     public boolean saveChangesToTariffTaxDB(DefaultTableModel tableModel) {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
+    public Object[][] readDataFRomTariffDB()
+    {
+        return TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
+    }
+
+
     public boolean saveChangesToBillingDB(DefaultTableModel tableModel, String latestEditableMonth) {
         return BillManagment.saveChangesToBillingDB(tableModel,latestEditableMonth);
     }

@@ -27,15 +27,8 @@ import java.net.Socket;
 public class E_AddCustomerPanel {
 
     private static JTextField nameField, cnicField, addressField, phoneNumberField;
-    private static Socket socket;
-    private static ObjectOutputStream objectOut;
-    private static ObjectInputStream objectIn;
 
-    public static JPanel createAddCustomerPanel(Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
-        socket = clientSocket;
-        objectOut = out;
-        objectIn = in;
-
+    public static JPanel createAddCustomerPanel(Socket clientSocket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         JPanel addCustomerPanel = new JPanel();
         addCustomerPanel.setBackground(Color.WHITE);
         addCustomerPanel.setLayout(new GridBagLayout()); // Use GridBagLayout for better control of positioning
@@ -171,7 +164,6 @@ public class E_AddCustomerPanel {
 
                 // Receive response from server
                 String response = (String) objectIn.readObject();
-
                 if ("SUCCESS".equalsIgnoreCase(response)) {
                     JOptionPane.showMessageDialog(null, "Successfully Added Customer!");
                     // Clear fields
@@ -182,6 +174,7 @@ public class E_AddCustomerPanel {
                     singlePhaseCheckbox.setSelected(false);
                     threePhaseCheckbox.setSelected(false);
                 } else {
+                    System.out.println(response);
                     JOptionPane.showMessageDialog(null, response);
                 }
             } catch (Exception e) {

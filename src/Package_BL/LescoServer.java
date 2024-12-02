@@ -96,6 +96,7 @@ class ClientHandler extends Thread {
                         } catch (Exception e) {
                             objectOut.writeObject("ERROR: Unable to fetch bill data.");
                             e.printStackTrace();
+
                         }
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");
@@ -149,10 +150,7 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("FAILURE");
                         System.out.println("Login failed for UserID: " + userName);
                     }
-                }
-
-                // Get Employee Name
-                else if ("getUserName".equalsIgnoreCase(command)) {
+                } else if ("getUserName".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         objectOut.writeObject(loggedInEmployee.getUserName());
                         System.out.println("Sent Name: " + loggedInEmployee.getUserName());
@@ -180,8 +178,8 @@ class ClientHandler extends Thread {
                                     "\nCustomer Type: " + customerType +
                                     "\nMeter Type: " + meterType);
                 
-                            String result = loggedInEmployee.addCustomerDetails(
-                                    "projectTxtFiles/EmployeesData", cnic, name, address, phoneNumber, customerType, meterType);
+                                    String filepath="src/Package_DB/CustomerInfo.txt";
+                            String result = loggedInEmployee.addCustomerDetails(filepath, cnic, name, address, phoneNumber, customerType, meterType);
                             objectOut.writeObject("SUCCESS".equalsIgnoreCase(result) ? "SUCCESS" : "FAILURE: " + result);
                             System.out.println(("SUCCESS".equalsIgnoreCase(result) ? "Customer added successfully: " : "Failed to add customer: ") + name);
                         } catch (Exception e) {
@@ -192,9 +190,10 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("ERROR: Not logged in");
                     }
                 } 
-                else if ("AddBillingInfo".equalsIgnoreCase(command)) {
+                else if ("ADD_BILLING_INFO".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
+                            // Reading individual values from the client
                             String customerId = (String) objectIn.readObject();
                             int regularUnits = objectIn.readInt();
                             int peakUnits = objectIn.readInt();
@@ -205,6 +204,8 @@ class ClientHandler extends Thread {
                                     "\nPeak Units: " + peakUnits);
                 
                             boolean result = loggedInEmployee.addBillingInfo(customerId, regularUnits, peakUnits);
+                
+                            // Send result to the client
                             objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to add billing info.");
                             System.out.println((result ? "Billing info added successfully for Customer ID: " : "Failed to add billing info for Customer ID: ") + customerId);
                         } catch (Exception e) {
@@ -214,8 +215,7 @@ class ClientHandler extends Thread {
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");
                     }
-                }
-                else if ("GET_CUSTOMER_IDS".equalsIgnoreCase(command)) {
+                } else if ("GET_CUSTOMER_IDS".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
                             ArrayList<String> customerIds = Employee.getAllcustomerIdsWithoutBill();
@@ -230,8 +230,7 @@ class ClientHandler extends Thread {
                         objectOut.writeObject(new ArrayList<>());
                         System.out.println("Error: Not logged in.");
                     }
-                } 
-                else if ("CHECK_SINGLE_PHASE".equalsIgnoreCase(command)) {
+                } else if ("CHECK_SINGLE_PHASE".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
                             String customerId = (String) objectIn.readObject();
@@ -248,11 +247,13 @@ class ClientHandler extends Thread {
                         System.out.println("Error: Not logged in.");
                     }
                 }
-                else if ("GET_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
+                else if ("fetchTariffData".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            Object[][] tariffData = loggedInEmployee.readDataFromTariffDB();
-                            objectOut.writeObject(tariffData);
+                         
+                            // Fetch tariff data from the database (assuming this method exists in your system)
+                            Object[][] tariffData = loggedInEmployee.readDataFRomTariffDB();
+                            objectOut.writeObject(tariffData); // Send tariff data to client
                             System.out.println("Tariff tax data sent to client.");
                         } catch (Exception e) {
                             objectOut.writeObject(new Object[0][0]); // Send empty data in case of error
@@ -263,48 +264,271 @@ class ClientHandler extends Thread {
                         objectOut.writeObject(new Object[0][0]); // Not logged in
                         System.out.println("Error: Not logged in.");
                     }
-                } 
-                // else if ("SAVE_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
-                //     if (loggedInEmployee != null) {
-                //         try {
-                //             int rowCount = objectIn.readInt();
-                //             Object[][] updatedData = new Object[rowCount][6];
+                }else if ("saveTariffChanges".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+
+                            String[] columnNames = {"Consumer Type", "Meter Type", "Regular Units", "Peak Units", "Tax %", "Fixed Tax"};
+                            Object[][] updatedCNICData = (Object[][]) objectIn.readObject();
+                            DefaultTableModel updatedModel = new DefaultTableModel(updatedCNICData, columnNames);
+                           
+                            boolean result = loggedInEmployee.saveChangesToTariffTaxDB(updatedModel);
                             
-                //             for (int i = 0; i < rowCount; i++) {
-                //                 for (int j = 0; j < 6; j++) {
-                //                     updatedData[i][j] = objectIn.readObject();
-                //                 }
-                //             }
-                            
-                //             boolean result = TariffTax.updateTariffTaxFile("projectTxtFiles/TariffFile", updatedData);
-                //             objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to save tariff tax data.");
-                //             System.out.println(result ? "Tariff tax data updated successfully." : "Failed to update tariff tax data.");
-                //         } catch (Exception e) {
-                //             objectOut.writeObject("ERROR: Unable to save tariff tax data.");
-                //             System.out.println("Error saving tariff tax data.");
-                //             e.printStackTrace();
-                //         }
-                //     } else {
-                //         objectOut.writeObject("ERROR: Not logged in");
-                //         System.out.println("Error: Not logged in.");
-                //     }
-                // }
+                            // Check if the data was saved successfully
+                            if (result) {
+                                objectOut.writeObject("success"); // Send success message to client
+                                System.out.println("Tariff tax data updated successfully.");
+                            } else {
+                                objectOut.writeObject("failure"); // Send failure message to client
+                                System.out.println("Failed to update tariff tax data.");
+                            }
+                        } catch (IOException ioEx) {
+                            // Handle IO exceptions like reading/writing issues
+                            objectOut.writeObject("error: IO Exception"); // Send error message to client
+                            System.out.println("Error while saving tariff tax data: " + ioEx.getMessage());
+                            ioEx.printStackTrace();
+                        } catch (ClassNotFoundException cnfEx) {
+                            // Handle class cast or object deserialization issues
+                            objectOut.writeObject("error: Class Not Found Exception"); // Send error message to client
+                            System.out.println("Error while deserializing the data: " + cnfEx.getMessage());
+                            cnfEx.printStackTrace();
+                        } catch (Exception e) {
+                            // Generic error handling for any unexpected issues
+                            objectOut.writeObject("error: General Exception"); // Send error message to client
+                            System.out.println("Error saving tariff tax data: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("error: Not logged in"); // Not logged in message
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                }                
+                
                 else if ("readDataFromCustomerDB".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            Object[][] custData = loggedInEmployee.readDataFromCustomerDB(); // Fetch bill data
-                            objectOut.writeObject(custData); // Send bill data to client
-                            System.out.println("Sent bill data object to the client.");
+                            // Fetch customer data
+                            Object[][] custData = loggedInEmployee.readDataFromCustomerDB();
+                
+                            // Send data to client
+                            objectOut.writeObject(custData);
+                            objectOut.flush(); // Ensure data is sent immediately
+                            System.out.println("Sent customer data object to the client.");
                         } catch (Exception e) {
-                            objectOut.writeObject("ERROR: Unable to fetch bill data.");
+                            // Log error and send response
+                            objectOut.writeObject("ERROR: Unable to fetch customer data. Details: " + e.getMessage());
+                            objectOut.flush();
                             e.printStackTrace();
                         }
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                } 
+                else if ("saveChangesToCustomerDB".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Receive the updated customer data as Object[][]
+                            Object[][] updatedCustomerData = (Object[][]) objectIn.readObject();
+                
+                            // Convert Object[][] to DefaultTableModel
+                            String[] columnNames = {"ID", "CNIC", "Name", "Address", "Phone", "Customer Type", "Meter Type", "Date", "RUC", "PHUC"};
+                            DefaultTableModel updatedModel = new DefaultTableModel(updatedCustomerData, columnNames);
+                
+                            // Call the saveChangesToCustomerDB method with the updated model
+                            boolean result = loggedInEmployee.saveChangesToCustomerDB(updatedModel);
+                
+                            if (result) {
+                                objectOut.writeObject("SUCCESS: Customer data updated successfully.");
+                                System.out.println("Customer data updated successfully.");
+                            } else {
+                                objectOut.writeObject("FAILURE: Unable to update customer data.");
+                                System.out.println("Failed to update customer data.");
+                            }
+                            objectOut.flush(); // Ensure data is sent
+                        } catch (IOException | ClassNotFoundException ex) {
+                            objectOut.writeObject("ERROR: Unable to process customer data. Details: " + ex.getMessage());
+                            objectOut.flush();
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
                     }
                 }
-                                
-        }
+                else if ("readBillingInfo".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Fetch customer data
+                            Object[][] custData = loggedInEmployee.readDataFromFileToDisplayBill();
+                
+                            // Send data to client
+                            objectOut.writeObject(custData);
+                            objectOut.flush(); // Ensure data is sent immediately
+                            System.out.println("Sent customer data object to the client.");
+                        } catch (Exception e) {
+                            // Log error and send response
+                            objectOut.writeObject("ERROR: Unable to fetch customer data. Details: " + e.getMessage());
+                            objectOut.flush();
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                } 
+                else if ("saveBillingInfo".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Receive the updated billing data as Object[][] from the client
+                            Object[][] updatedBillingData = (Object[][]) objectIn.readObject();
+                            
+                            // Define the column names for the table
+                            String[] columnNames = {"ID", "Month", "Regular", "Peak", "Cost of Electricity", "SalesTax", "Fixed $", "Total Bill", "Reading Date", "DueDate", "Bill Status"};
+                            Object[][] data = loggedInEmployee.readDataFromFileToDisplayBill();
+
+                            // Determine the most recent month
+                          
+                           
+                                String latestMonth = "";
+                        
+                                for (int i = 0; i < data.length; i++) {
+                                    String billMonth = data[i][1].toString(); // Month is in the 2nd column (index 1)
+                                    //System.out.println("Bill"+billMonth);
+                                    if (latestMonth.compareTo(billMonth) < 0) {
+                                        latestMonth = billMonth;
+                                        // System.out.println("Latest"+latestMonth);
+                                    }
+                                }
+                                String latestEditableMonth = latestMonth;
+                            
+                            // Create a DefaultTableModel with the received data and column names
+                            DefaultTableModel updatedModel = new DefaultTableModel(updatedBillingData, columnNames);
+                            
+                            // Call the saveChangesToBillingDB method with the updated model and the latest editable month
+                            boolean result = loggedInEmployee.saveChangesToBillingDB(updatedModel, latestEditableMonth);
+                            
+                            // Respond to the client based on the result of the save operation
+                            if (result) {
+                                objectOut.writeObject("success");
+                                System.out.println("Billing information updated successfully.");
+                            } else {
+                                objectOut.writeObject("error: Unable to update billing information.");
+                                System.out.println("Failed to update billing information.");
+                            }
+                            objectOut.flush(); // Ensure the data is sent
+                            
+                        } catch (IOException | ClassNotFoundException ex) {
+                            // Handle any exceptions that occur during the process
+                            try {
+                                objectOut.writeObject("error: Unable to process billing data. Details: " + ex.getMessage());
+                                objectOut.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            ex.printStackTrace(); // Log the exception
+                        }
+                    } else {
+                        // Handle the case where no employee is logged in
+                        try {
+                            objectOut.writeObject("error: Not logged in");
+                            objectOut.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                }
+                else if ("readBillReport".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Fetch customer data
+                            Object[][] custData = loggedInEmployee.viewPaid_UnpaidBillReport();
+                            // Send data to client
+                            objectOut.writeObject(custData);
+                            objectOut.flush(); // Ensure data is sent immediately
+                            System.out.println("Sent customer data object to the client.");
+                        } catch (Exception e) {
+                            // Log error and send response
+                            objectOut.writeObject("ERROR: Unable to fetch customer data. Details: " + e.getMessage());
+                            objectOut.flush();
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                }  
+                else if ("CNICreport".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Fetch customer data
+                            Object[][] custData = loggedInEmployee.CNICExpiresIn30days();
+                            // Send data to client
+                            objectOut.writeObject(custData);
+                            objectOut.flush(); // Ensure data is sent immediately
+                            System.out.println("Sent customer data object to the client.");
+                        } catch (Exception e) {
+                            // Log error and send response
+                            objectOut.writeObject("ERROR: Unable to fetch customer data. Details: " + e.getMessage());
+                            objectOut.flush();
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                }
+                else if ("ValidateCurrentPass".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Read the current password sent by the client
+                            String currentPassword = (String) objectIn.readObject();
+                            boolean isValid = loggedInEmployee.isValidPass(currentPassword);
+                
+                            // Send response to the client (true if valid, false if not)
+                            objectOut.writeObject(isValid);
+                            objectOut.flush();
+                            System.out.println("Password validation response sent to client.");
+                        } catch (Exception e) {
+                            objectOut.writeObject(false); // Send false if error occurs
+                            objectOut.flush();
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                } else if ("UpdatePass".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            // Read the new password from the client
+                            String newPassword = (String) objectIn.readObject();
+                            loggedInEmployee.updateEmpPassword(newPassword);
+                
+                            // Send success message to the client
+                            objectOut.writeObject("Password Updated Successfully");
+                            objectOut.flush();
+                            System.out.println("Password updated successfully.");
+                        } catch (Exception e) {
+                            objectOut.writeObject("ERROR: Failed to update password");
+                            objectOut.flush();
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        objectOut.flush();
+                        System.out.println("Error: Employee is not logged in.");
+                    }
+                }
+                  
+            }
         } catch (Exception e) {
             System.out.println("Error handling client: " + e.getMessage());
         }// } finally {

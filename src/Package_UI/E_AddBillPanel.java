@@ -171,37 +171,50 @@ public class E_AddBillPanel {
         try {
             out.writeObject("GET_CUSTOMER_IDS");
             out.flush();
-            //in.readObject();
+            
+            // Receiving response from the server
             return (ArrayList<String>) in.readObject();
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
+    
 
     private static boolean checkIfSinglePhaseFromServer(String customerId, ObjectOutputStream out, ObjectInputStream in) {
         try {
             out.writeObject("CHECK_SINGLE_PHASE");
             out.writeObject(customerId);
             out.flush();
+            
+            // Receiving response from the server
             return (boolean) in.readObject();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
+    
 
     private static boolean sendBillingInfoToServer(String customerId, int regularUnits, int peakUnits, ObjectOutputStream out, ObjectInputStream in) {
         try {
+            // Sending data to the server
             out.writeObject("ADD_BILLING_INFO");
-            out.writeObject(new Object[]{customerId, regularUnits, peakUnits});
+            out.writeObject(customerId);  // Sending customer ID
+            out.writeInt(regularUnits);  // Sending regular units
+            out.writeInt(peakUnits);     // Sending peak units
             out.flush();
-            return (boolean) in.readObject();
+    
+            // Receiving response from the server
+            String response = (String) in.readObject();
+            System.out.println("Server Response: " + response);
+            return "SUCCESS".equalsIgnoreCase(response);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
+    
 
     private static void reloadBillingPanel(JPanel billingPanel, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
         billingPanel.removeAll();

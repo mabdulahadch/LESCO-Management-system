@@ -135,10 +135,11 @@ public class EmployeeLogin {
             String username = userField.getText();
             String password = new String(passField.getPassword());
 
-            try {
-                Socket socket = new Socket("localhost", 12345); // Connect to server
-                ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream());
+           try {
+                   Socket socket = new Socket("localhost", 12345); // Connect to server
+                    ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream());
+
 
                 objectOut.writeObject("LOGINASEMPLOYEE");
                 objectOut.writeObject(username);

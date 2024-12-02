@@ -9,6 +9,11 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -29,7 +34,7 @@ public class E_EditBillInfo {
 
     private static boolean isColumnEdited = false;
 
-    public static JPanel createViewCustomerBillsPanel(Employee emp) {
+    public static JPanel createViewCustomerBillsPanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         JPanel viewCustomerBillsPanel = new JPanel(new BorderLayout());
         viewCustomerBillsPanel.setBorder(new EmptyBorder(0, 1, 0, 0));
         viewCustomerBillsPanel.add(new JLabel("View Customer Bills Panel"));
@@ -49,8 +54,25 @@ public class E_EditBillInfo {
         viewCustomerBillsPanel.add(searchBarPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"ID", "Month", "Regular", "Peak", "Cost of Electricity", "SalesTax", "Fixed $", "Total Bill", "Reading Date", "DueDate", "Bill Status"};
-        Object[][] data = emp.readDataFromFileToDisplayBill();
-
+        Object[][] data = null;
+try {
+    objectOut.writeObject("readBillingInfo");
+    objectOut.flush();
+    Object response = objectIn.readObject();
+    if (response instanceof Object[][]) {
+        data = (Object[][]) response;
+    } else if (response instanceof String && ((String) response).startsWith("ERROR")) {
+        JOptionPane.showMessageDialog(null, "Error from server: " + response,
+                "Error", JOptionPane.ERROR_MESSAGE);
+    } else {
+        JOptionPane.showMessageDialog(null, "Unexpected response from server.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+    }
+} catch (IOException | ClassNotFoundException e) {
+    e.printStackTrace();
+    JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+}
         // Determine the most recent month
         String latestEditableMonth = getLatestEditableMonth(data);
 
@@ -144,11 +166,41 @@ public class E_EditBillInfo {
                 }
                 else {
                     tableModel.removeRow(selectedRow);
-                    if (emp.saveChangesToBillingDB(tableModel, latestEditableMonth)) {
-                        JOptionPane.showMessageDialog(null, "Bill updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Failed to update Bill. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-                    }
+                    try {
+                        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+                        int rowCount = tableModel.getRowCount();
+                        int colCount = tableModel.getColumnCount();
+                    
+                        // Convert table model to Object[][]
+                        Object[][] updatedData = new Object[rowCount][colCount];
+                        for (int i = 0; i < rowCount; i++) {
+                            for (int j = 0; j < colCount; j++) {
+                                updatedData[i][j] = tableModel.getValueAt(i, j);
+                            }
+                        }
+                        objectOut.writeObject("saveBillingInfo");
+                        objectOut.writeObject(updatedData);
+                        objectOut.flush();
+                    
+                        Object response = objectIn.readObject();
+                        if (response instanceof String) {
+                            String responseMessage = (String) response;
+                            if (responseMessage.equalsIgnoreCase("success")) {
+                                JOptionPane.showMessageDialog(null, "Customer Data updated successfully!",
+                                        "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                            } else if (responseMessage.toLowerCase().contains("error")) {
+                                JOptionPane.showMessageDialog(null, "Error: " + responseMessage,
+                                        "Update Failed", JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Unexpected response from server.",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    } catch (IOException | ClassNotFoundException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error communicating with server: " + ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }                    
                 }
             }
         });
@@ -165,20 +217,49 @@ public class E_EditBillInfo {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int selectedRow = table.getSelectedRow();
-
+        
                 if (selectedRow == -1) {
                     JOptionPane.showMessageDialog(null, "Please select a row to Update Bill.", "No row selected", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
-                if (emp.saveChangesToBillingDB(tableModel, latestEditableMonth)) {
-                    JOptionPane.showMessageDialog(null, "Bill updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Failed to update Bill. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+        
+                try {
+                    DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+                    int rowCount = tableModel.getRowCount();
+                    int colCount = tableModel.getColumnCount();
+                
+                    // Convert table model to Object[][]
+                    Object[][] updatedData = new Object[rowCount][colCount];
+                    for (int i = 0; i < rowCount; i++) {
+                        for (int j = 0; j < colCount; j++) {
+                            updatedData[i][j] = tableModel.getValueAt(i, j);
+                        }
+                    }
+                    objectOut.writeObject("saveBillingInfo");
+                    objectOut.writeObject(updatedData);
+                    objectOut.flush();
+                
+                    Object response = objectIn.readObject();
+                    if (response instanceof String) {
+                        String responseMessage = (String) response;
+                        if (responseMessage.equalsIgnoreCase("success")) {
+                            JOptionPane.showMessageDialog(null, "Customer Data updated successfully!",
+                                    "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                        } else if (responseMessage.toLowerCase().contains("error")) {
+                            JOptionPane.showMessageDialog(null, "Error: " + responseMessage,
+                                    "Update Failed", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Unexpected response from server.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                } catch (IOException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error communicating with server: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
         buttonPanel.add(saveButton);
         buttonPanel.add(removeButton);
         viewCustomerBillsPanel.add(buttonPanel, BorderLayout.SOUTH);
