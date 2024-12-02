@@ -1,25 +1,15 @@
 package Package_UI;
 
 import Font.LoadFont;
-import Package_BL.Employee;
 import Package_BL.TariffTax;
 import Package_BL.projectTxtFiles;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -33,18 +23,57 @@ import javax.swing.table.TableRowSorter;
 public class E_UpdateTarrifTax {
 
     private static boolean isColumnEdited = false;
-
-    public static JPanel createTariffTaxInfoPanel(Employee emp) {
-
+    public static JPanel createTariffTaxInfoPanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         JPanel tariffTaxInfoPanel = new JPanel(new BorderLayout());
         tariffTaxInfoPanel.setBorder(new EmptyBorder(0, 1, 0, 0));
 
+        // Search Bar Panel
+        JPanel searchBarPanel = createSearchBarPanel();
+        JTextField searchField = (JTextField) searchBarPanel.getComponent(1);
+
+        tariffTaxInfoPanel.add(searchBarPanel, BorderLayout.NORTH);
+
+        // Fetch data from server
+        Object[][] data = fetchDataFromServer(objectOut, objectIn);
+        String[] columnNames = {"Consumer Type", "Meter Type", "Regular Units", "Peak Units", "Tax %", "Fixed Tax"};
+
+        // Table setup
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 2 || column == 3 || column == 4 || column == 5;
+            }
+        };
+
+        JTable table = setupTable(tableModel);
+
+        // Table row sorter for search functionality
+        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(rowSorter);
+
+        setupSearchFilter(searchField, rowSorter);
+
+        tableModel.addTableModelListener(e -> isColumnEdited = true);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        tariffTaxInfoPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Button Panel
+        JPanel buttonPanel = createButtonPanel(objectOut, objectIn, tableModel, table);
+        tariffTaxInfoPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return tariffTaxInfoPanel;
+    }
+
+    private static JPanel createSearchBarPanel() {
         JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        searchBarPanel.setPreferredSize(new Dimension(300, 50));  // Adjust the height of the search bar panel
+        searchBarPanel.setPreferredSize(new Dimension(300, 50));
         searchBarPanel.setBackground(Color.WHITE);
 
         JLabel searchLabel = new JLabel("Search: ");
         searchLabel.setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
+
         JTextField searchField = new JTextField();
         searchField.setFont(LoadFont.customFont.deriveFont(Font.PLAIN, 18));
         searchField.setPreferredSize(new Dimension(500, 40));
@@ -52,29 +81,33 @@ public class E_UpdateTarrifTax {
         searchBarPanel.add(searchLabel);
         searchBarPanel.add(searchField);
 
-        tariffTaxInfoPanel.add(searchBarPanel, BorderLayout.NORTH);
+        return searchBarPanel;
+    }
 
-        String[] columnNames = {"Consumer Type", "Meter Type", "Regular Units", "Peak Units", "Tax %", "Fixed Tax"};
-        Object[][] data = TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
-
-        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 2 || column == 3 || column == 4 || column == 5;
-            }
-        };
+    /**
+     * Sets up the table for the Tariff Tax panel.
+     */
+    private static JTable setupTable(DefaultTableModel tableModel) {
         JTable table = new JTable(tableModel);
+        table.setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
+        table.setRowHeight(50);
+        table.setShowGrid(true);
+        table.setSelectionBackground(Color.LIGHT_GRAY);
+        table.setSelectionForeground(Color.BLACK);
+        table.setFillsViewportHeight(true);
 
-        TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(tableModel);
-        table.setRowSorter(rowSorter);
+        JTableHeader header = table.getTableHeader();
+        header.setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
+        header.setBackground(new Color(127, 192, 20));
+        header.setForeground(Color.WHITE);
 
-        tableModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                isColumnEdited = true;
-            }
-        });
+        return table;
+    }
 
+    /**
+     * Sets up the search functionality for the table.
+     */
+    private static void setupSearchFilter(JTextField searchField, TableRowSorter<DefaultTableModel> rowSorter) {
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -93,34 +126,19 @@ public class E_UpdateTarrifTax {
 
             private void filterTable() {
                 String searchText = searchField.getText();
-                if (searchText.trim().length() == 0) {
+                if (searchText.trim().isEmpty()) {
                     rowSorter.setRowFilter(null);
                 } else {
                     rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + searchText));
                 }
             }
         });
+    }
 
-        table.setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
-        table.setRowHeight(50);
-        table.setShowGrid(true);
-        table.setSelectionBackground(Color.LIGHT_GRAY);
-        table.setSelectionForeground(Color.BLACK);
-        table.setFillsViewportHeight(true);
-        
-        
-        TableColumn meterType = table.getColumnModel().getColumn(0);
-        meterType.setPreferredWidth(300);
-
-        JTableHeader header = table.getTableHeader();
-        header.setFont(LoadFont.customFont.deriveFont(Font.BOLD, 15));
-        header.setBackground(new Color(127, 192, 20));
-        header.setForeground(Color.WHITE);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        tariffTaxInfoPanel.add(scrollPane, BorderLayout.CENTER);
-
+    /**
+     * Creates the button panel with Save functionality.
+     */
+    private static JPanel createButtonPanel(ObjectOutputStream objectOut, ObjectInputStream objectIn, DefaultTableModel tableModel, JTable table) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(Color.WHITE);
         buttonPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
@@ -135,15 +153,14 @@ public class E_UpdateTarrifTax {
         saveButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                saveButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Show black border on hover
+                saveButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                saveButton.setBorder(BorderFactory.createEmptyBorder()); // Remove border when not hovering
+                saveButton.setBorder(BorderFactory.createEmptyBorder());
             }
         });
-
 
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -154,28 +171,52 @@ public class E_UpdateTarrifTax {
                     JOptionPane.showMessageDialog(null, "Please select a row to update the expiry date.", "No row selected", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                
+
                 if (!isColumnEdited) {
                     JOptionPane.showMessageDialog(null, "Please edit the Table column before saving.", "No column edited", JOptionPane.WARNING_MESSAGE);
-                    isColumnEdited = false;
                     return;
                 }
 
-                if (emp.saveChangesToTariffTaxDB(tableModel)) {
-                    JOptionPane.showMessageDialog(null, "Tarrif Tax updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                if (saveChangesToServer(objectOut, objectIn, tableModel)) {
+                    JOptionPane.showMessageDialog(null, "Tariff Tax updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                    isColumnEdited = false;
                 } else {
                     JOptionPane.showMessageDialog(null, "Failed to update Tariff Tax. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        
-        
 
         buttonPanel.add(saveButton);
 
-        tariffTaxInfoPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return tariffTaxInfoPanel;
+        return buttonPanel;
     }
 
+    /**
+     * Fetches data from the server.
+     */
+    private static Object[][] fetchDataFromServer(ObjectOutputStream objectOut, ObjectInputStream objectIn) {
+        try {
+            objectOut.writeObject("FETCH_TARIFF_DATA");
+            objectOut.flush();
+            return (Object[][]) objectIn.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Object[0][0];
+        }
+    }
+
+    /**
+     * Saves changes to the server.
+     */
+    private static boolean saveChangesToServer(ObjectOutputStream objectOut, ObjectInputStream objectIn, DefaultTableModel tableModel) {
+        try {
+            objectOut.writeObject("SAVE_TARIFF_CHANGES");
+            objectOut.writeObject(tableModel.getDataVector());
+            objectOut.flush();
+            return (boolean) objectIn.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

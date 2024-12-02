@@ -166,7 +166,7 @@ public class Employee {
         return BillManagment.readDataFromFileToDisplayBillToEmp();
     }
 
-    public ArrayList<String> getAllcustomerIdsWithoutBill() {
+    public static ArrayList<String> getAllcustomerIdsWithoutBill() {
 
         ArrayList<String> customerIdsWithoutBill = new ArrayList<>();
         ArrayList<String> billedCustomerIds = new ArrayList<>(); // Using ArrayList instead of Set
@@ -208,9 +208,9 @@ public class Employee {
         return formatter.format(new Date());
     }
     
-    public boolean isSinglePhase(String customerID){
-        return Customer.singlePhaseCheck(customerID);
-    }
+        public static boolean isSinglePhase(String customerID){
+            return Customer.singlePhaseCheck(customerID);
+        }
     
 
 }

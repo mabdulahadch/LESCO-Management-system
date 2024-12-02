@@ -59,11 +59,8 @@ public class C_ViewBillPanel {
         Object[][] data = null;
 
         try {
-            // Request customer bills from the server
             objectOut.writeObject("getCustomerBill");
-            objectOut.flush(); // Ensure the message is sent
-
-            // Receive the data from the server
+            objectOut.flush(); 
             data = (Object[][]) objectIn.readObject();
 
         } catch (IOException | ClassNotFoundException e) {
@@ -73,7 +70,7 @@ public class C_ViewBillPanel {
         }
 
         if (data == null) {
-            data = new Object[0][columnNames.length]; // Ensure correct column count
+            data = new Object[0][columnNames.length]; 
         }
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {

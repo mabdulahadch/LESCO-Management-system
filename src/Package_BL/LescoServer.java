@@ -3,12 +3,14 @@ package Package_BL;
 import Font.LoadFont;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -131,16 +133,15 @@ class ClientHandler extends Thread {
                     }
                 }
 
-
-
-
                 // employee
-                if ("LOGINASEMPLOYEE".equalsIgnoreCase(command)) {
+                 if ("LOGINASEMPLOYEE".equalsIgnoreCase(command)) {
                     String userName = (String) objectIn.readObject();
                     String password = (String) objectIn.readObject();
-                    System.out.println("Received UserID: " + userName + ", UserCNIC: " + password);
+                    System.out.println("Received UserID: " + userName + ", Password: " + password);
 
+                    // Call employee login logic
                     loggedInEmployee = empLogin(userName, password);
+
                     if (loggedInEmployee != null) {
                         objectOut.writeObject("SUCCESS");
                         System.out.println("Login successful for UserID: " + userName);
@@ -148,18 +149,166 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("FAILURE");
                         System.out.println("Login failed for UserID: " + userName);
                     }
-                } else if ("getUserName".equalsIgnoreCase(command)) {
+                }
+
+                // Get Employee Name
+                else if ("getUserName".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
-                        objectOut.writeObject(loggedInEmployee.getUserName()); // Respond with the customer's
-                        // name
+                        objectOut.writeObject(loggedInEmployee.getUserName());
                         System.out.println("Sent Name: " + loggedInEmployee.getUserName());
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");
-                        System.out.println("Client requested name but is not logged in.");
                     }
                 }
 
-            }
+                // Add New Customer (Employee Action)
+                else if ("AddNewCustomer".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            String cnic = (String) objectIn.readObject();
+                            String name = (String) objectIn.readObject();
+                            String address = (String) objectIn.readObject();
+                            String phoneNumber = (String) objectIn.readObject();
+                            String customerType = (String) objectIn.readObject();
+                            String meterType = (String) objectIn.readObject();
+                
+                            System.out.println("Received new customer details: " +
+                                    "\nCNIC: " + cnic +
+                                    "\nName: " + name +
+                                    "\nAddress: " + address +
+                                    "\nPhone Number: " + phoneNumber +
+                                    "\nCustomer Type: " + customerType +
+                                    "\nMeter Type: " + meterType);
+                
+                            String result = loggedInEmployee.addCustomerDetails(
+                                    "projectTxtFiles/EmployeesData", cnic, name, address, phoneNumber, customerType, meterType);
+                            objectOut.writeObject("SUCCESS".equalsIgnoreCase(result) ? "SUCCESS" : "FAILURE: " + result);
+                            System.out.println(("SUCCESS".equalsIgnoreCase(result) ? "Customer added successfully: " : "Failed to add customer: ") + name);
+                        } catch (Exception e) {
+                            objectOut.writeObject("ERROR: Unable to add customer.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                    }
+                } 
+                else if ("AddBillingInfo".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            String customerId = (String) objectIn.readObject();
+                            int regularUnits = objectIn.readInt();
+                            int peakUnits = objectIn.readInt();
+                
+                            System.out.println("Received billing info: " +
+                                    "\nCustomer ID: " + customerId +
+                                    "\nRegular Units: " + regularUnits +
+                                    "\nPeak Units: " + peakUnits);
+                
+                            boolean result = loggedInEmployee.addBillingInfo(customerId, regularUnits, peakUnits);
+                            objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to add billing info.");
+                            System.out.println((result ? "Billing info added successfully for Customer ID: " : "Failed to add billing info for Customer ID: ") + customerId);
+                        } catch (Exception e) {
+                            objectOut.writeObject("ERROR: Unable to add billing info.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                    }
+                }
+                else if ("GET_CUSTOMER_IDS".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            ArrayList<String> customerIds = Employee.getAllcustomerIdsWithoutBill();
+                            objectOut.writeObject(customerIds);
+                            System.out.println("Customer IDs without bill sent to client.");
+                        } catch (Exception e) {
+                            objectOut.writeObject(new ArrayList<>());
+                            System.out.println("Error retrieving customer IDs without bill.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject(new ArrayList<>());
+                        System.out.println("Error: Not logged in.");
+                    }
+                } 
+                else if ("CHECK_SINGLE_PHASE".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            String customerId = (String) objectIn.readObject();
+                            boolean isSinglePhase = Employee.isSinglePhase(customerId);
+                            objectOut.writeObject(isSinglePhase);
+                            System.out.println("Single-phase status sent for Customer ID: " + customerId);
+                        } catch (Exception e) {
+                            objectOut.writeObject(false);
+                            System.out.println("Error checking single-phase status for Customer ID.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject(false);
+                        System.out.println("Error: Not logged in.");
+                    }
+                }
+                else if ("GET_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            Object[][] tariffData = TariffTax.readDataFromFile("projectTxtFiles/TariffFile");
+                            objectOut.writeObject(tariffData);
+                            System.out.println("Tariff tax data sent to client.");
+                        } catch (Exception e) {
+                            objectOut.writeObject(new Object[0][0]); // Send empty data in case of error
+                            System.out.println("Error retrieving tariff tax data.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject(new Object[0][0]); // Not logged in
+                        System.out.println("Error: Not logged in.");
+                    }
+                } 
+                else if ("SAVE_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            int rowCount = objectIn.readInt();
+                            Object[][] updatedData = new Object[rowCount][6];
+                            
+                            for (int i = 0; i < rowCount; i++) {
+                                for (int j = 0; j < 6; j++) {
+                                    updatedData[i][j] = objectIn.readObject();
+                                }
+                            }
+                            
+                            boolean result = TariffTax.updateTariffTaxFile("projectTxtFiles/TariffFile", updatedData);
+                            objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to save tariff tax data.");
+                            System.out.println(result ? "Tariff tax data updated successfully." : "Failed to update tariff tax data.");
+                        } catch (Exception e) {
+                            objectOut.writeObject("ERROR: Unable to save tariff tax data.");
+                            System.out.println("Error saving tariff tax data.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject("ERROR: Not logged in");
+                        System.out.println("Error: Not logged in.");
+                    }
+                }
+                else if ("SEARCH_TARIFF_TAX".equalsIgnoreCase(command)) {
+                    if (loggedInEmployee != null) {
+                        try {
+                            String searchQuery = (String) objectIn.readObject();
+                            Object[][] filteredData = TariffTax.searchTariffData("projectTxtFiles/TariffFile", searchQuery);
+                            objectOut.writeObject(filteredData);
+                            System.out.println("Filtered tariff tax data sent to client for query: " + searchQuery);
+                        } catch (Exception e) {
+                            objectOut.writeObject(new Object[0][0]); // Send empty data in case of error
+                            System.out.println("Error filtering tariff tax data.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        objectOut.writeObject(new Object[0][0]); // Not logged in
+                        System.out.println("Error: Not logged in.");
+                    }
+                }
+                
+                                
+        }
         } catch (Exception e) {
             System.out.println("Error handling client: " + e.getMessage());
         }// } finally {

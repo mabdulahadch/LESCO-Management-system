@@ -37,11 +37,14 @@ public class EmployeeDashBoard {
         contentPanel.setLayout(cardLayout);
 
         contentPanel.add(E_HomePanel.createHomePanel(socket, objectOut, objectIn), "Home");
-
-
-
-
-        
+        contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(socket, objectOut, objectIn), "AddCustomerPanel");
+        contentPanel.add(E_AddBillPanel.createBillingInfoPanel(socket, objectOut, objectIn), "BillingInfoPanel");
+        contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(socket, objectOut, objectIn), "TariffTaxInfoPanel");
+        contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
+        contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(emp), "EditCustomerBillsPanel");
+        contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(emp), "ViewReportsOfBillPanel");
+        contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(emp), "ViewCNICReportsPanel");
+        contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(emp), "UpdatePasswordPanel");
 
         String[] options = {
             "Home",
@@ -92,15 +95,13 @@ public class EmployeeDashBoard {
                         cardLayout.show(contentPanel, "Home");
                     }
                     case "Add New Customer" -> {  // Done
-                        contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(emp), "AddCustomerPanel");
+                       
                         cardLayout.show(contentPanel, "AddCustomerPanel");
                     }
                     case "Add New Billing Info" -> { // Done
-                        contentPanel.add(E_AddBillPanel.createBillingInfoPanel(emp), "BillingInfoPanel");
                         cardLayout.show(contentPanel, "BillingInfoPanel");
                     }
                     case "Edit Tariff Tax Info" -> { //Done
-                        contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(emp), "TariffTaxInfoPanel");
                         cardLayout.show(contentPanel, "TariffTaxInfoPanel");
                     }
                     case "Edit Customer Info" -> { //Done
