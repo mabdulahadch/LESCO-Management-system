@@ -9,6 +9,11 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -32,7 +37,7 @@ public class E_EditCustomerInfo {
 
     private static boolean isColumnEdited = false;
 
-    public static JPanel createEditCustomerInfoPanel(Employee emp) {
+    public static JPanel createEditCustomerInfoPanel(Socket socket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         JPanel updateCustomerInfoPanel = new JPanel(new BorderLayout());
         updateCustomerInfoPanel.setBorder(new EmptyBorder(0, 1, 0, 0));
 
@@ -52,7 +57,20 @@ public class E_EditCustomerInfo {
         updateCustomerInfoPanel.add(searchBarPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"ID", "Name", "Address", "Phone #", "CNIC", "Consumer", "Meter", "Connection", "Regular", "Peak"};
-        Object[][] data = emp.readDataFromCustomerDB();
+        Object[][] data = null;//emp.readDataFromCustomerDB();
+
+        
+        try {
+            objectOut.writeObject("readDataFromCustomerDB");
+            objectOut.flush(); 
+            data = (Object[][]) objectIn.readObject();
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
@@ -183,11 +201,11 @@ public class E_EditCustomerInfo {
                     return;
                 }
 
-                if (emp.saveChangesToCustomerDB(tableModel)) {
-                    JOptionPane.showMessageDialog(null, "Customer Data updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Failed to update Customer Data. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-                }
+                // if (emp.saveChangesToCustomerDB(tableModel)) {
+                //     JOptionPane.showMessageDialog(null, "Customer Data updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                // } else {
+                //     JOptionPane.showMessageDialog(null, "Failed to update Customer Data. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+                // }
             }
         });
         removeButton.addActionListener(new ActionListener() {
@@ -206,11 +224,11 @@ public class E_EditCustomerInfo {
                 tableModel.removeRow(selectedRow);
 
                 // Update the underlying data in the file
-                if (emp.saveChangesToCustomerDB(tableModel)) {
-                    JOptionPane.showMessageDialog(null, "Customer data updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Failed to update customer data. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-                }
+                // if (emp.saveChangesToCustomerDB(tableModel)) {
+                //     JOptionPane.showMessageDialog(null, "Customer data updated successfully!", "Update Successful", JOptionPane.INFORMATION_MESSAGE);
+                // } else {
+                //     JOptionPane.showMessageDialog(null, "Failed to update customer data. Please try again.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+                // }
             }
         });
 

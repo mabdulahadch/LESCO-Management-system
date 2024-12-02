@@ -191,9 +191,6 @@ public class E_UpdateTarrifTax {
         return buttonPanel;
     }
 
-    /**
-     * Fetches data from the server.
-     */
     private static Object[][] fetchDataFromServer(ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         try {
             objectOut.writeObject("FETCH_TARIFF_DATA");

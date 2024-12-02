@@ -171,6 +171,7 @@ public class E_AddBillPanel {
         try {
             out.writeObject("GET_CUSTOMER_IDS");
             out.flush();
+            //in.readObject();
             return (ArrayList<String>) in.readObject();
         } catch (Exception e) {
             e.printStackTrace();

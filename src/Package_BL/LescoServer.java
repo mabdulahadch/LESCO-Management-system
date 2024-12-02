@@ -251,7 +251,7 @@ class ClientHandler extends Thread {
                 else if ("GET_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            Object[][] tariffData = TariffTax.readDataFromFile("projectTxtFiles/TariffFile");
+                            Object[][] tariffData = loggedInEmployee.readDataFromTariffDB();
                             objectOut.writeObject(tariffData);
                             System.out.println("Tariff tax data sent to client.");
                         } catch (Exception e) {
@@ -264,49 +264,45 @@ class ClientHandler extends Thread {
                         System.out.println("Error: Not logged in.");
                     }
                 } 
-                else if ("SAVE_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
+                // else if ("SAVE_TARIFF_TAX_DATA".equalsIgnoreCase(command)) {
+                //     if (loggedInEmployee != null) {
+                //         try {
+                //             int rowCount = objectIn.readInt();
+                //             Object[][] updatedData = new Object[rowCount][6];
+                            
+                //             for (int i = 0; i < rowCount; i++) {
+                //                 for (int j = 0; j < 6; j++) {
+                //                     updatedData[i][j] = objectIn.readObject();
+                //                 }
+                //             }
+                            
+                //             boolean result = TariffTax.updateTariffTaxFile("projectTxtFiles/TariffFile", updatedData);
+                //             objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to save tariff tax data.");
+                //             System.out.println(result ? "Tariff tax data updated successfully." : "Failed to update tariff tax data.");
+                //         } catch (Exception e) {
+                //             objectOut.writeObject("ERROR: Unable to save tariff tax data.");
+                //             System.out.println("Error saving tariff tax data.");
+                //             e.printStackTrace();
+                //         }
+                //     } else {
+                //         objectOut.writeObject("ERROR: Not logged in");
+                //         System.out.println("Error: Not logged in.");
+                //     }
+                // }
+                else if ("readDataFromCustomerDB".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            int rowCount = objectIn.readInt();
-                            Object[][] updatedData = new Object[rowCount][6];
-                            
-                            for (int i = 0; i < rowCount; i++) {
-                                for (int j = 0; j < 6; j++) {
-                                    updatedData[i][j] = objectIn.readObject();
-                                }
-                            }
-                            
-                            boolean result = TariffTax.updateTariffTaxFile("projectTxtFiles/TariffFile", updatedData);
-                            objectOut.writeObject(result ? "SUCCESS" : "FAILURE: Unable to save tariff tax data.");
-                            System.out.println(result ? "Tariff tax data updated successfully." : "Failed to update tariff tax data.");
+                            Object[][] custData = loggedInEmployee.readDataFromCustomerDB(); // Fetch bill data
+                            objectOut.writeObject(custData); // Send bill data to client
+                            System.out.println("Sent bill data object to the client.");
                         } catch (Exception e) {
-                            objectOut.writeObject("ERROR: Unable to save tariff tax data.");
-                            System.out.println("Error saving tariff tax data.");
+                            objectOut.writeObject("ERROR: Unable to fetch bill data.");
                             e.printStackTrace();
                         }
                     } else {
                         objectOut.writeObject("ERROR: Not logged in");
-                        System.out.println("Error: Not logged in.");
                     }
                 }
-                else if ("SEARCH_TARIFF_TAX".equalsIgnoreCase(command)) {
-                    if (loggedInEmployee != null) {
-                        try {
-                            String searchQuery = (String) objectIn.readObject();
-                            Object[][] filteredData = TariffTax.searchTariffData("projectTxtFiles/TariffFile", searchQuery);
-                            objectOut.writeObject(filteredData);
-                            System.out.println("Filtered tariff tax data sent to client for query: " + searchQuery);
-                        } catch (Exception e) {
-                            objectOut.writeObject(new Object[0][0]); // Send empty data in case of error
-                            System.out.println("Error filtering tariff tax data.");
-                            e.printStackTrace();
-                        }
-                    } else {
-                        objectOut.writeObject(new Object[0][0]); // Not logged in
-                        System.out.println("Error: Not logged in.");
-                    }
-                }
-                
                                 
         }
         } catch (Exception e) {

@@ -40,11 +40,11 @@ public class EmployeeDashBoard {
         contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(socket, objectOut, objectIn), "AddCustomerPanel");
         contentPanel.add(E_AddBillPanel.createBillingInfoPanel(socket, objectOut, objectIn), "BillingInfoPanel");
         contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(socket, objectOut, objectIn), "TariffTaxInfoPanel");
-        contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
-        contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(emp), "EditCustomerBillsPanel");
-        contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(emp), "ViewReportsOfBillPanel");
-        contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(emp), "ViewCNICReportsPanel");
-        contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(emp), "UpdatePasswordPanel");
+        contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(socket, objectOut, objectIn), "EditCustomerInfoPanel");
+        // contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(emp), "EditCustomerBillsPanel");
+        // contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(emp), "ViewReportsOfBillPanel");
+        // contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(emp), "ViewCNICReportsPanel");
+        // contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(emp), "UpdatePasswordPanel");
 
         String[] options = {
             "Home",
@@ -105,7 +105,7 @@ public class EmployeeDashBoard {
                         cardLayout.show(contentPanel, "TariffTaxInfoPanel");
                     }
                     case "Edit Customer Info" -> { //Done
-                        contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
+                        // contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
                         cardLayout.show(contentPanel, "EditCustomerInfoPanel");
                     }
                     case "Edit Customer Bills" -> {   // Done
