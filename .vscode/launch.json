@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "type": "java",
             "name": "Current File",
@@ -33,13 +34,15 @@
         },
         {
             "type": "java",
-            "name": "JUnit Test",
+            "name": "Run JUnit Tests",
             "request": "launch",
             "mainClass": "",
             "projectName": "LESCO-MANAGEMENT-SYSTEM",
             "classPaths": [
-                "C:/Users/tower/OneDrive/Documents/GitHub/LESCO-Management-system/lib/junit-jupiter-api-5.9.2.jar"
+                "bin",
+                "lib/*"
             ]
         }
+        
     ]
 }
