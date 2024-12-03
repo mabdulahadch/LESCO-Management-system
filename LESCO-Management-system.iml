@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
 <<<<<<< HEAD
+<<<<<<< HEAD
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -35,5 +36,10 @@
       </library>
     </orderEntry>
 >>>>>>> testCases
+=======
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+>>>>>>> db19b0d510942c4dc2c351db3f8fe849d8d99e1a
   </component>
 </module>
