@@ -81,15 +81,15 @@ try {
 }
 
 // Populate data in UI if available
-if (data != null) {
-    JTable table = new JTable(data, columnNames);
-    JScrollPane scrollPane = new JScrollPane(table);
-    JFrame frame = new JFrame("Customer Database");
-    frame.add(scrollPane);
-    frame.setSize(800, 400);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.setVisible(true);
-}
+// if (data != null) {
+//     JTable table = new JTable(data, columnNames);
+//     JScrollPane scrollPane = new JScrollPane(table);
+//     JFrame frame = new JFrame("Customer Database");
+//     frame.add(scrollPane);
+//     frame.setSize(800, 400);
+//     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//     frame.setVisible(true);
+// }
 
 
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
