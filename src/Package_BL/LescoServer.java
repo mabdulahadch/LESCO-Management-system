@@ -251,7 +251,7 @@ class ClientHandler extends Thread {
                         try {
                          
                             // Fetch tariff data from the database (assuming this method exists in your system)
-                            Object[][] tariffData = loggedInEmployee.readDataFRomTariffDB();
+                            Object[][] tariffData = loggedInEmployee.readDataFromTariffDB();
                             objectOut.writeObject(tariffData); // Send tariff data to client
                             System.out.println("Tariff tax data sent to client.");
                         } catch (Exception e) {

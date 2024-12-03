@@ -137,7 +137,7 @@ public class Employee {
     public boolean saveChangesToTariffTaxDB(DefaultTableModel tableModel) {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
-    public Object[][] readDataFRomTariffDB()
+    public Object[][] readDataFromTariffDB()
     {
         return TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
     }
@@ -160,11 +160,7 @@ public class Employee {
     public Object[][] viewPaid_UnpaidBillReport() {
         return BillManagment.calulateAmountUpdainANDPaidBills();
     }
-
-    // public void changeBillStatus(Scanner input) {
-    //     BillManagment.changeBillStatus(input);
-    // }
-
+    
     public Object[][] readDataFromCustomerDB() {
         return Customer.readDataFromCustomerDB();
     }
