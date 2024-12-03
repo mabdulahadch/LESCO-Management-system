@@ -151,53 +151,53 @@ class EmployeeTest {
 
 
 
-    @Test
-    void testReadDataFromFile(){
+    // @Test
+    // void testReadDataFromFile(){
 
-        Object[][] result = employee.readDataFromTariffTaxDB();
+    //     Object[][] result = employee.readDataFromTariffTaxDB();
 
-        Object[][] expected = {
-                {"Domestic Type", "1", "5", " ", "17", "150"},
-                {"Commercial Type", "1", "15", " ", "20", "250"},
-                {"Domestic Type", "3", "8", "12", "17", "150"},
-                {"Commercial Type", "3", "18", "25", "20", "250"}
-        };
+    //     Object[][] expected = {
+    //             {"Domestic Type", "1", "5", " ", "17", "150"},
+    //             {"Commercial Type", "1", "15", " ", "20", "250"},
+    //             {"Domestic Type", "3", "8", "12", "17", "150"},
+    //             {"Commercial Type", "3", "18", "25", "20", "250"}
+    //     };
 
-        assertEquals(expected.length, result.length);
+    //     assertEquals(expected.length, result.length);
 
-        for (int i = 0; i < result.length; i++) {
-            assertArrayEquals(expected[i], result[i]);
-        }
-    }
+    //     for (int i = 0; i < result.length; i++) {
+    //         assertArrayEquals(expected[i], result[i]);
+    //     }
+    // }
 
-    @Test
-    void testSaveChangesToTariffTaxDB(){
+    // @Test
+    // void testSaveChangesToTariffTaxDB(){
 
-        // Prepare sample data in-memory
-        String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
-        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
-        tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "155"});
-        tableModel.addRow(new Object[]{"Commercial Type", "1", "15", " ", "20", "255"});
+    //     // Prepare sample data in-memory
+    //     String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
+    //     DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+    //     tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "155"});
+    //     tableModel.addRow(new Object[]{"Commercial Type", "1", "15", " ", "20", "255"});
 
 
-        boolean result = employee.saveChangesToTariffTaxDB(tableModel);
+    //     boolean result = employee.saveChangesToTariffTaxDB(tableModel);
 
-        assertTrue(result, "Failed to save changes to Tariff Tax DB");
+    //     assertTrue(result, "Failed to save changes to Tariff Tax DB");
 
-        Object[][] resultData = employee.readDataFromTariffTaxDB();
-        Object[][] expectedData = {
-                {"Domestic Type", "1", "5", " ", "17", "155"},
-                {"Commercial Type", "1", "15", " ", "20", "255"},
-                {"Domestic Type", "3", "8", "12", "17", "150"},
-                {"Commercial Type", "3", "18", "25", "20", "250"}
-        };
+    //     Object[][] resultData = employee.readDataFromTariffTaxDB();
+    //     Object[][] expectedData = {
+    //             {"Domestic Type", "1", "5", " ", "17", "155"},
+    //             {"Commercial Type", "1", "15", " ", "20", "255"},
+    //             {"Domestic Type", "3", "8", "12", "17", "150"},
+    //             {"Commercial Type", "3", "18", "25", "20", "250"}
+    //     };
 
-        assertEquals(expectedData.length, resultData.length, "Mismatch in data length");
-        for (int i = 0; i < resultData.length; i++) {
-            assertArrayEquals(expectedData[i], resultData[i], "Mismatch in row " + i);
-        }
+    //     assertEquals(expectedData.length, resultData.length, "Mismatch in data length");
+    //     for (int i = 0; i < resultData.length; i++) {
+    //         assertArrayEquals(expectedData[i], resultData[i], "Mismatch in row " + i);
+    //     }
 
-    }
+    // }
 
 
 

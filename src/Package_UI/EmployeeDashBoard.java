@@ -37,11 +37,14 @@ public class EmployeeDashBoard {
         contentPanel.setLayout(cardLayout);
 
         contentPanel.add(E_HomePanel.createHomePanel(socket, objectOut, objectIn), "Home");
-
-
-
-
-        
+         contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(socket, objectOut, objectIn), "AddCustomerPanel");//Done
+         contentPanel.add(E_AddBillPanel.createBillingInfoPanel(socket, objectOut, objectIn), "BillingInfoPanel");//Done
+         contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(socket, objectOut, objectIn), "TariffTaxInfoPanel"); //Done
+         contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(socket, objectOut, objectIn), "EditCustomerInfoPanel");//done
+         contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(socket, objectOut, objectIn), "EditCustomerBillsPanel"); //done
+         contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(socket, objectOut, objectIn), "ViewReportsOfBillPanel");//Done
+         contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(socket, objectOut, objectIn), "ViewCNICReportsPanel"); // Done
+         contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(socket, objectOut, objectIn), "UpdatePasswordPanel");//done
 
         String[] options = {
             "Home",
@@ -92,35 +95,29 @@ public class EmployeeDashBoard {
                         cardLayout.show(contentPanel, "Home");
                     }
                     case "Add New Customer" -> {  // Done
-                        contentPanel.add(E_AddCustomerPanel.createAddCustomerPanel(emp), "AddCustomerPanel");
+                       
                         cardLayout.show(contentPanel, "AddCustomerPanel");
                     }
                     case "Add New Billing Info" -> { // Done
-                        contentPanel.add(E_AddBillPanel.createBillingInfoPanel(emp), "BillingInfoPanel");
                         cardLayout.show(contentPanel, "BillingInfoPanel");
                     }
                     case "Edit Tariff Tax Info" -> { //Done
-                        contentPanel.add(E_UpdateTarrifTax.createTariffTaxInfoPanel(emp), "TariffTaxInfoPanel");
                         cardLayout.show(contentPanel, "TariffTaxInfoPanel");
                     }
                     case "Edit Customer Info" -> { //Done
-                        contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
+                        // contentPanel.add(E_EditCustomerInfo.createEditCustomerInfoPanel(emp), "EditCustomerInfoPanel");
                         cardLayout.show(contentPanel, "EditCustomerInfoPanel");
                     }
                     case "Edit Customer Bills" -> {   // Done
-                        contentPanel.add(E_EditBillInfo.createViewCustomerBillsPanel(emp), "EditCustomerBillsPanel");
                         cardLayout.show(contentPanel, "EditCustomerBillsPanel");
                     }
                     case "View Bill Reports" -> { // Done
-                        contentPanel.add(E_BillReportPanel.createViewReportsOfBillPanel(emp), "ViewReportsOfBillPanel");
                         cardLayout.show(contentPanel, "ViewReportsOfBillPanel");
                     }
                     case "View CNIC Reports" -> {  // Done 
-                        contentPanel.add(E_CNICReportPanel.createViewCNICReportsPanel(emp), "ViewCNICReportsPanel");
                         cardLayout.show(contentPanel, "ViewCNICReportsPanel");
                     }
                     case "Update Password" -> {  // Done
-                        contentPanel.add(E_ChangePasswordPanel.createUpdatePasswordPanel(emp), "UpdatePasswordPanel");
                         cardLayout.show(contentPanel, "UpdatePasswordPanel");
                     }
                     case "Logout" -> {  // Done

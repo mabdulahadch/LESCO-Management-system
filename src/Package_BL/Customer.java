@@ -145,36 +145,44 @@ public class Customer {
 
     public static Object[][] readDataFromCustomerDB() {
         ArrayList<Object[]> dataList = new ArrayList<>();
-
+    
         try (BufferedReader reader = new BufferedReader(new FileReader(new File(projectTxtFiles.CustomerFile)))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",");
-
-                String customerId = values[0];
-                String customerName = values[1];
-                String customerAddress = values[2];
-                String customerPhone = values[3];
-                String customerCNIC = values[4];
-                String customerType = values[5];
-                String meterType = values[6];
-                String meterInstallationDate = values[7];
-                String regularUnits = values[8];
-                String peakUnits = values[9];
-
-                dataList.add(new Object[]{customerId, customerName, customerAddress, customerPhone, customerCNIC, customerType, meterType, meterInstallationDate, regularUnits, peakUnits});
+    
+                // Validate the line has exactly 10 columns
+                if (values.length == 10) {
+                    String customerId = values[0];
+                    String customerName = values[1];
+                    String customerAddress = values[2];
+                    String customerPhone = values[3];
+                    String customerCNIC = values[4];
+                    String customerType = values[5];
+                    String meterType = values[6];
+                    String meterInstallationDate = values[7];
+                    String regularUnits = values[8];
+                    String peakUnits = values[9];
+    
+                    // Add the data to the list
+                    dataList.add(new Object[]{customerId, customerName, customerAddress, customerPhone, customerCNIC, customerType, meterType, meterInstallationDate, regularUnits, peakUnits});
+                } else {
+                    // Log or handle rows with missing or extra data
+                    System.err.println("Skipping malformed line: " + line);
+                }
             }
         } catch (IOException e) {
-            e.getMessage();
+            e.printStackTrace();
         }
-
+    
+        // Convert ArrayList to Object[][]
         Object[][] data = new Object[dataList.size()][10];
         for (int i = 0; i < dataList.size(); i++) {
             data[i] = dataList.get(i);
         }
         return data;
     }
-
+    
     // Customer Functionallities
     public Object[][] displayCNICDetail(String id) {
         return NADRA.displayCNICDetailFromNADRADB(id);
@@ -187,53 +195,49 @@ public class Customer {
     public Object[][] readDataFromBillingDB() {
         return BillManagment.readDataFromFileToDisplayBillToUser(getCustomerId());
     }
-
-    public static boolean saveChangesToCustomerDB(DefaultTableModel tableModel) {
-        ArrayList<String> updatedData = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(projectTxtFiles.CustomerFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                updatedData.add(line);
+  
+    public static boolean saveChangesToCustomerDB(Object tableModelObject) {
+        if (tableModelObject instanceof DefaultTableModel) {
+            DefaultTableModel tableModel = (DefaultTableModel) tableModelObject; // Cast to DefaultTableModel
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectTxtFiles.CustomerFile, false))) {
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    StringBuilder updatedLine = new StringBuilder();
+                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                        Object cellValue = tableModel.getValueAt(i, j);
+                        updatedLine.append(cellValue != null ? cellValue.toString() : "");
+                        if (j < tableModel.getColumnCount() - 1) {
+                            updatedLine.append(",");
+                        }
+                    }
+                    writer.write(updatedLine.toString());
+                    writer.newLine();
+                }
+                return true;
+            } catch (IOException ex) {
+                System.err.println("Error saving changes to customer database: " + ex.getMessage());
+                return false;
             }
-        } catch (FileNotFoundException ex) {
-            ex.getMessage();
-        } catch (IOException ex) {
-            ex.getMessage();
+        } else {
+            System.err.println("Provided object is not an instance of DefaultTableModel");
+            return false;
         }
-
-        updatedData.clear();
-
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-
-            String col0 = tableModel.getValueAt(i, 0).toString();
-            String col1 = tableModel.getValueAt(i, 1).toString();
-            String col2 = tableModel.getValueAt(i, 2).toString();
-            String col3 = tableModel.getValueAt(i, 3).toString();
-            String col4 = tableModel.getValueAt(i, 4).toString();
-            String col5 = tableModel.getValueAt(i, 5).toString();
-            String col6 = tableModel.getValueAt(i, 6).toString();
-            String col7 = tableModel.getValueAt(i, 7).toString();
-            String col8 = tableModel.getValueAt(i, 8).toString();
-            String col9 = tableModel.getValueAt(i, 9).toString();
-
-            String updatedLine = String.join(",", col0, col1, col2, col3, col4, col5, col6, col7, col8, col9);
-
-            updatedData.add(updatedLine);
-        }
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(projectTxtFiles.CustomerFile, false))) {
-            for (String updatedLine : updatedData) {
-                writer.write(updatedLine);
-                writer.newLine();
-            }
-        } catch (IOException ex) {
-            ex.getMessage();
-        }
-
-        return true;
     }
+    
 
+    // Override isCellEditable to make the cell editable based on the value
+    // public boolean isCellEditable(int rowIndex, int columnIndex) {
+    //     // Get value of the cell and check if it's not null or empty
+    //     Object value = super.getValueAt(rowIndex, columnIndex);
+    //     return value != null && !value.toString().isEmpty(); // Return true if not null and not empty
+    // }
+
+    // // Override getValueAt to return an empty string if the value is null
+    // public Object getValueAt(int rowIndex, int columnIndex) {
+    //     // Get value from the super class (DefaultTableModel)
+    //     Object value = super.getValueAt(rowIndex, columnIndex);
+    //     return value != null ? value : ""; // Return empty string if value is null
+    // }
+        
     public String getAddress() {
         return address;
     }

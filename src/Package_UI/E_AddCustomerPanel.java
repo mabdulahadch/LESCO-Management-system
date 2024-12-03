@@ -2,7 +2,6 @@ package Package_UI;
 
 import Font.LoadFont;
 import Package_BL.Employee;
-import Package_BL.projectTxtFiles;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -21,13 +20,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class E_AddCustomerPanel {
 
-    private static JTextField nameField, cnicField, addressField,phoneNumberField;
+    private static JTextField nameField, cnicField, addressField, phoneNumberField;
 
-    public static JPanel createAddCustomerPanel(Employee emp) {
-
+    public static JPanel createAddCustomerPanel(Socket clientSocket, ObjectOutputStream objectOut, ObjectInputStream objectIn) {
         JPanel addCustomerPanel = new JPanel();
         addCustomerPanel.setBackground(Color.WHITE);
         addCustomerPanel.setLayout(new GridBagLayout()); // Use GridBagLayout for better control of positioning
@@ -46,13 +47,6 @@ public class E_AddCustomerPanel {
         cnicField.setPreferredSize(textFieldSize);
         addCustomerPanel.add(cnicLabel, gbc);
 
-        cnicField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                nameField.requestFocusInWindow();
-            }
-        });
-
         gbc.gridx = 1;
         addCustomerPanel.add(cnicField, gbc);
 
@@ -68,13 +62,6 @@ public class E_AddCustomerPanel {
         gbc.gridx = 1;
         addCustomerPanel.add(nameField, gbc);
 
-        nameField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addressField.requestFocusInWindow();
-            }
-        });
-
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel addressLabel = new JLabel("Address:");
@@ -86,13 +73,6 @@ public class E_AddCustomerPanel {
 
         gbc.gridx = 1;
         addCustomerPanel.add(addressField, gbc);
-
-        addressField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                phoneNumberField.requestFocusInWindow();
-            }
-        });
 
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -119,7 +99,6 @@ public class E_AddCustomerPanel {
 
         gbc.gridx = 0;
         gbc.gridy = 5;
-
         JLabel meterTypeLabel = new JLabel("Meter Type:");
         meterTypeLabel.setFont(LoadFont.customFont.deriveFont(Font.PLAIN, 20));
 
@@ -141,9 +120,6 @@ public class E_AddCustomerPanel {
         meterTypePanel.add(singlePhaseCheckbox);
         meterTypePanel.add(threePhaseCheckbox);
 
-        singlePhaseCheckbox.setFocusPainted(false);
-        threePhaseCheckbox.setFocusPainted(false);
-
         addCustomerPanel.add(meterTypeLabel, gbc);
 
         gbc.gridx = 1;
@@ -162,20 +138,6 @@ public class E_AddCustomerPanel {
         enterButton.setFocusPainted(false);
         enterButton.setFont(LoadFont.customFont.deriveFont(Font.PLAIN, 15));
 
-        enterButton.setBorder(BorderFactory.createEmptyBorder());
-
-        enterButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                enterButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Show black border on hover
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                enterButton.setBorder(BorderFactory.createEmptyBorder()); // Remove border when not hovering
-            }
-        });
-
         enterButton.addActionListener(evt -> {
             String cnic = cnicField.getText();
             String name = nameField.getText();
@@ -184,26 +146,40 @@ public class E_AddCustomerPanel {
             String customerType = (String) customerTypeDropdown.getSelectedItem();
             String meterType = singlePhaseCheckbox.isSelected() ? "Single" : "Three";
 
-            // System.out.println(cnic+" "+name+" "+address+" "+phoneNumber+" "+customerType+" "+meterType);
+            // Validation check
             if (cnic.isEmpty() || name.isEmpty() || address.isEmpty() || phoneNumber.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Fill out the fields"); // Display error message
-                return; // Exit the action listener if validation fails
+                JOptionPane.showMessageDialog(null, "Fill out the fields");
+                return;
             }
 
-            String response = emp.addCustomerDetails(projectTxtFiles.CustomerFile, cnic, name, address, phoneNumber, customerType, meterType);
+            try {
+                // Send customer data to the server
+                objectOut.writeObject("AddNewCustomer");
+                objectOut.writeObject(cnic);
+                objectOut.writeObject(name);
+                objectOut.writeObject(address);
+                objectOut.writeObject(phoneNumber);
+                objectOut.writeObject(customerType);
+                objectOut.writeObject(meterType);
 
-            if ("true".equals(response)) {
-                // Further action upon success
-                JOptionPane.showMessageDialog(null, "Successfully Added Customer !"); // Show error message
-                cnicField.setText(" ");
-                nameField.setText(" ");
-                addressField.setText(" ");
-                phoneNumberField.setText(" ");
-                singlePhaseCheckbox.setSelected(false);
-                threePhaseCheckbox.setSelected(false);
-
-            } else {
-                JOptionPane.showMessageDialog(null, response); // Show error message
+                // Receive response from server
+                String response = (String) objectIn.readObject();
+                if ("SUCCESS".equalsIgnoreCase(response)) {
+                    JOptionPane.showMessageDialog(null, "Successfully Added Customer!");
+                    // Clear fields
+                    cnicField.setText("");
+                    nameField.setText("");
+                    addressField.setText("");
+                    phoneNumberField.setText("");
+                    singlePhaseCheckbox.setSelected(false);
+                    threePhaseCheckbox.setSelected(false);
+                } else {
+                    System.out.println(response);
+                    JOptionPane.showMessageDialog(null, response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error communicating with server.");
             }
         });
 
@@ -211,5 +187,4 @@ public class E_AddCustomerPanel {
 
         return addCustomerPanel;
     }
-
 }

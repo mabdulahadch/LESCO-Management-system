@@ -136,7 +136,7 @@ public class CustomerLogin {
             String userCNIC = userField.getText();
 
             try  {
-                Socket socket = new Socket("localhost", 12345); // Connect to server
+                Socket socket = new Socket("192.168.103.140", 12345); // Connect to server
                 ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream());
                 // Send login command and credentials

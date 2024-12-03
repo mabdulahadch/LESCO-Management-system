@@ -44,7 +44,7 @@ public class EmployeeLogin {
     private JButton loginButton, backButton;
 
     public EmployeeLogin() {
-        
+
         LoadFont.loadCustomFont();
         loginFrame = new JFrame("Employee Login");
         loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -141,22 +141,23 @@ public class EmployeeLogin {
                     ObjectInputStream objectIn = new ObjectInputStream(socket.getInputStream());
 
 
-                 objectOut.writeObject("LOGINASEMPLOYEE");
-                 objectOut.writeObject(username);
-                 objectOut.writeObject(password);
+                objectOut.writeObject("LOGINASEMPLOYEE");
+                objectOut.writeObject(username);
+                objectOut.writeObject(password);
 
-                 String response = (String) objectIn.readObject();
+                String response = (String) objectIn.readObject();
 
                 if ("SUCCESS".equals(response)) {
                     EmployeeDashBoard empDash = new EmployeeDashBoard();
-                    empDash.openEmployeeDashboard(null,socket, objectOut, objectIn);  // Open employee dashboard on successful login
+                    empDash.openEmployeeDashboard(null, socket, objectOut, objectIn); // Open employee dashboard on
+                                                                                      // successful login
                     loginFrame.dispose(); // Close login window after successful login
                 } else {
                     System.out.println("Login Not Successfull");
                     JOptionPane.showMessageDialog(loginFrame, "Login Failed. Try again.");
                     userField.setText("");
                     passField.setText("");
-    
+
                 }
 
             } catch (IOException | ClassNotFoundException ex) {

@@ -1,7 +1,6 @@
 package Package_UI;
 
 import Font.LoadFont;
-import Package_BL.Employee;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -10,6 +9,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -26,7 +28,7 @@ public class E_AddBillPanel {
     private static JComboBox<String> customerIdDropdown;
     private static JButton generateBillButton;
 
-    public static JPanel createBillingInfoPanel(Employee emp) {
+    public static JPanel createBillingInfoPanel(Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
 
         JPanel addBillPanel = new JPanel();
         addBillPanel.setBackground(Color.WHITE);
@@ -43,8 +45,8 @@ public class E_AddBillPanel {
         customerIdsLabel.setFont(LoadFont.customFont.deriveFont(Font.PLAIN, 20));
         addBillPanel.add(customerIdsLabel, gbc);
 
-        ArrayList<String> customerIds = emp.getAllcustomerIdsWithoutBill();
-        customerIdDropdown = new JComboBox<>(customerIds.toArray(String[]::new));
+        ArrayList<String> customerIds = getCustomerIdsFromServer(out, in);
+        customerIdDropdown = new JComboBox<>(customerIds.toArray(new String[0]));
         customerIdDropdown.setFont(LoadFont.customFont.deriveFont(Font.PLAIN, 15));
 
         gbc.gridx = 1;
@@ -54,7 +56,8 @@ public class E_AddBillPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedCustomerId = (String) customerIdDropdown.getSelectedItem();
-                if (emp.isSinglePhase(selectedCustomerId)) {
+                boolean isSinglePhase = checkIfSinglePhaseFromServer(selectedCustomerId, out, in);
+                if (isSinglePhase) {
                     peakUnitsLabel.setVisible(false);
                     peakUnitsField.setVisible(false);
                     peakUnitsField.setText("0");
@@ -148,10 +151,9 @@ public class E_AddBillPanel {
                 int regularUnits = Integer.parseInt(regularUnitsStr);
                 int peakUnits = Integer.parseInt(peakUnitsStr);
 
-                if (emp.addBillingInfo(selectedCustomerId, regularUnits, peakUnits)) {
+                if (sendBillingInfoToServer(selectedCustomerId, regularUnits, peakUnits, out, in)) {
                     JOptionPane.showMessageDialog(null, "Bill added successfully for Customer ID: " + selectedCustomerId);
-                    // reload screeen
-                    reloadBillingPanel(addBillPanel,emp);
+                    reloadBillingPanel(addBillPanel, clientSocket, out, in);
                 } else {
                     JOptionPane.showMessageDialog(null, "Failed to add bill for Customer ID: " + selectedCustomerId);
                 }
@@ -164,14 +166,61 @@ public class E_AddBillPanel {
         addBillPanel.add(generateBillButton, gbc);
         return addBillPanel;
     }
+
+    private static ArrayList<String> getCustomerIdsFromServer(ObjectOutputStream out, ObjectInputStream in) {
+        try {
+            out.writeObject("GET_CUSTOMER_IDS");
+            out.flush();
+            
+            // Receiving response from the server
+            return (ArrayList<String>) in.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
     
+
+    private static boolean checkIfSinglePhaseFromServer(String customerId, ObjectOutputStream out, ObjectInputStream in) {
+        try {
+            out.writeObject("CHECK_SINGLE_PHASE");
+            out.writeObject(customerId);
+            out.flush();
+            
+            // Receiving response from the server
+            return (boolean) in.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    private static void reloadBillingPanel(JPanel billingPanel, Employee emp) {
+
+    private static boolean sendBillingInfoToServer(String customerId, int regularUnits, int peakUnits, ObjectOutputStream out, ObjectInputStream in) {
+        try {
+            // Sending data to the server
+            out.writeObject("ADD_BILLING_INFO");
+            out.writeObject(customerId);  // Sending customer ID
+            out.writeInt(regularUnits);  // Sending regular units
+            out.writeInt(peakUnits);     // Sending peak units
+            out.flush();
+    
+            // Receiving response from the server
+            String response = (String) in.readObject();
+            System.out.println("Server Response: " + response);
+            return "SUCCESS".equalsIgnoreCase(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+
+    private static void reloadBillingPanel(JPanel billingPanel, Socket clientSocket, ObjectOutputStream out, ObjectInputStream in) {
         billingPanel.removeAll();
-        JPanel newBillingPanel = createBillingInfoPanel(emp);
-        billingPanel.add(newBillingPanel); 
-        
-        billingPanel.revalidate(); 
-        billingPanel.repaint();  
+        JPanel newBillingPanel = createBillingInfoPanel(clientSocket, out, in);
+        billingPanel.add(newBillingPanel);
+        billingPanel.revalidate();
+        billingPanel.repaint();
     }
 }
