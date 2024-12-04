@@ -170,7 +170,6 @@ class EmployeeTest {
     @Test
     void testSaveChangesToTariffTaxDB(){
 
-        // Prepare sample data in-memory
         String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
         tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "155"});
