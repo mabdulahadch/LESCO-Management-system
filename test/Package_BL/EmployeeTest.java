@@ -1,10 +1,12 @@
 package Package_BL;
 
+
+import javax.swing.table.DefaultTableModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.table.DefaultTableModel;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -136,6 +138,7 @@ class EmployeeTest {
 //        assertEquals(expectedResult, actualResult, "This Month's Bill is already added for Customer: 0003");
 //    }
 
+
 //    @Test
 //    void testCNICExpiresIn30days(){
 //        Object[][] data = employee.CNICExpiresIn30days();
@@ -148,7 +151,7 @@ class EmployeeTest {
     @Test
     void testReadDataFromFile(){
 
-        Object[][] result = employee.readDataFromTariffTaxDB();
+        Object[][] result = employee.readDataFromTariffDB();
 
         Object[][] expected = {
                 {"Domestic Type", "1", "5", " ", "17", "150"},
@@ -164,48 +167,36 @@ class EmployeeTest {
         }
     }
 
+    @Test
+    void testSaveChangesToTariffTaxDB(){
+
+        String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
+        tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "155"});
+        tableModel.addRow(new Object[]{"Commercial Type", "1", "15", " ", "20", "255"});
+
+
+        boolean result = employee.saveChangesToTariffTaxDB(tableModel);
+
+        assertTrue(result, "Failed to save changes to Tariff Tax DB");
+
+        Object[][] resultData = employee.readDataFromTariffDB();
+        Object[][] expectedData = {
+                {"Domestic Type", "1", "5", " ", "17", "155"},
+                {"Commercial Type", "1", "15", " ", "20", "255"},
+                {"Domestic Type", "3", "8", "12", "17", "150"},
+                {"Commercial Type", "3", "18", "25", "20", "250"}
+        };
+
+        assertEquals(expectedData.length, resultData.length, "Mismatch in data length");
+        for (int i = 0; i < resultData.length; i++) {
+            assertArrayEquals(expectedData[i], resultData[i], "Mismatch in row " + i);
+        }
+
+    }
 
 
 
-
-//
-//    @Test
-//    void testSaveChangesToTariffTaxDB() throws IOException {
-//
-//        // Write sample data to the file
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-//            writer.write("1,100,50,10,5\n");
-//            writer.write("3,200,60,15,10\n");
-//        }
-//
-//        // Set up the DefaultTableModel
-//        String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
-//        DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
-//        tableModel.addRow(new Object[]{"1", "100", "55", "15", "12", "7"});
-//        tableModel.addRow(new Object[]{"3", "200", "65", "20", "18", "11"});
-//
-//        // Set the path
-//        projectTxtFiles.TariffFile = tempFile.getAbsolutePath();
-//
-//        // Call the method
-//        boolean result = YourClass.saveChangesToTariffTaxDB(tableModel);
-//
-//        // Verify the result
-//        assertTrue(result);
-//
-//        // Read back the updated file and check content
-//        try (BufferedReader reader = new BufferedReader(new FileReader(tempFile))) {
-//            String[] expected = {
-//                    "1,100,55,15,12,7",
-//                    "3,200,65,20,18,11"
-//            };
-//
-//            List<String> lines = reader.lines().toList();
-//            assertEquals(expected.length, lines.size());
-//            for (int i = 0; i < expected.length; i++) {
-//                assertEquals(expected[i], lines.get(i));
-//            }
-//        }
 
 }
 

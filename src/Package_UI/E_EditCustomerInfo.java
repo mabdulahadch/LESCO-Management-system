@@ -65,15 +65,21 @@ try {
     objectOut.writeObject("readDataFromCustomerDB");
     objectOut.flush();
     Object response = objectIn.readObject();
+    
+    
     if (response instanceof Object[][]) {
         data = (Object[][]) response;
-    } else if (response instanceof String && ((String) response).startsWith("ERROR")) {
+    } 
+    else if (response instanceof String && ((String) response).startsWith("ERROR")) {
         JOptionPane.showMessageDialog(null, "Error from server: " + response,
                 "Error", JOptionPane.ERROR_MESSAGE);
-    } else {
+    } 
+    else {
         JOptionPane.showMessageDialog(null, "Unexpected response from server.",
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
+
+
 } catch (IOException | ClassNotFoundException e) {
     e.printStackTrace();
     JOptionPane.showMessageDialog(null, "Error fetching data from server: " + e.getMessage(),
@@ -238,6 +244,7 @@ try {
                     objectOut.flush();
             
                     Object response = objectIn.readObject();
+                    
                     if (response instanceof String && ((String) response).equalsIgnoreCase("success")) {
                         JOptionPane.showMessageDialog(null, "Customer Data updated successfully!", 
                             "Update Successful", JOptionPane.INFORMATION_MESSAGE);

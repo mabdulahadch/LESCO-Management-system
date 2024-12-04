@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
 <<<<<<< HEAD
+<<<<<<< HEAD
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -34,6 +35,6 @@
         <SOURCES />
       </library>
     </orderEntry>
->>>>>>> testCases
+>>>>>>>>> Temporary merge branch 2
   </component>
 </module>

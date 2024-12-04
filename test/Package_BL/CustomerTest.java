@@ -1,21 +1,25 @@
 package Package_BL;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CustomerTest {
 
     private static final String TEST_CUSTOMER_FILE = "test_customer_file.txt";
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         // Set up a test file for Customer operations
         File testFile = new File(TEST_CUSTOMER_FILE);
@@ -125,7 +129,7 @@ public class CustomerTest {
         assertEquals(initialData.length + 1, updatedData.length);
     }
 
-    @After
+    @AfterAll
     public void tearDown() throws Exception {
         File testFile = new File(TEST_CUSTOMER_FILE);
         if (testFile.exists()) {

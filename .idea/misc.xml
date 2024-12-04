@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
   <component name="ProjectRootManager" version="2" languageLevel="JDK_22" default="true" project-jdk-name="liberica-22" project-jdk-type="JavaSDK">
 =======
   <component name="ProjectRootManager" version="2" languageLevel="JDK_22" default="true" project-jdk-name="22" project-jdk-type="JavaSDK">
 >>>>>>> testCases
+=======
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_22" default="true" project-jdk-name="liberica-22" project-jdk-type="JavaSDK">
+>>>>>>> db19b0d510942c4dc2c351db3f8fe849d8d99e1a
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

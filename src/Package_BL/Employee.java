@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Scanner;
 import javax.swing.table.DefaultTableModel;
 
 public class Employee {
@@ -130,10 +129,6 @@ public class Employee {
     }
     
 
-    public Object[][] CNICExpiresIn30days() {
-        return NADRA.getCNICExpiresIn30days();
-    }
-
     public boolean addBillingInfo(String customerID, int currentRegularUnits, int currentPeakUnits) {
         BillManagment billManagment = new BillManagment();
         return billManagment.addBillingInfoInFile(customerID, currentRegularUnits, currentPeakUnits);
@@ -142,11 +137,17 @@ public class Employee {
     public boolean saveChangesToTariffTaxDB(DefaultTableModel tableModel) {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
-    public Object[][] readDataFRomTariffDB()
+    public Object[][] readDataFromTariffDB()
     {
         return TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
     }
 
+
+
+
+    public Object[][] CNICExpiresIn30days() {
+        return NADRA.getCNICExpiresIn30days();
+    }
 
     public boolean saveChangesToBillingDB(DefaultTableModel tableModel, String latestEditableMonth) {
         return BillManagment.saveChangesToBillingDB(tableModel,latestEditableMonth);
@@ -159,11 +160,7 @@ public class Employee {
     public Object[][] viewPaid_UnpaidBillReport() {
         return BillManagment.calulateAmountUpdainANDPaidBills();
     }
-
-    public void changeBillStatus(Scanner input) {
-        BillManagment.changeBillStatus(input);
-    }
-
+    
     public Object[][] readDataFromCustomerDB() {
         return Customer.readDataFromCustomerDB();
     }

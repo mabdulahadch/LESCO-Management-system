@@ -252,7 +252,7 @@ class ClientHandler extends Thread {
                         try {
                          
                             // Fetch tariff data from the database (assuming this method exists in your system)
-                            Object[][] tariffData = loggedInEmployee.readDataFRomTariffDB();
+                            Object[][] tariffData = loggedInEmployee.readDataFromTariffDB();
                             objectOut.writeObject(tariffData); // Send tariff data to client
                             System.out.println("Tariff tax data sent to client.");
                         } catch (Exception e) {
@@ -329,18 +329,15 @@ class ClientHandler extends Thread {
                 else if ("saveChangesToCustomerDB".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            // Receive the updated customer data as Object[][]
                             Object[][] updatedCustomerData = (Object[][]) objectIn.readObject();
                 
-                            // Convert Object[][] to DefaultTableModel
                             String[] columnNames = {"ID", "CNIC", "Name", "Address", "Phone", "Customer Type", "Meter Type", "Date", "RUC", "PHUC"};
                             DefaultTableModel updatedModel = new DefaultTableModel(updatedCustomerData, columnNames);
                 
-                            // Call the saveChangesToCustomerDB method with the updated model
                             boolean result = loggedInEmployee.saveChangesToCustomerDB(updatedModel);
                 
                             if (result) {
-                                objectOut.writeObject("SUCCESS: Customer data updated successfully.");
+                                objectOut.writeObject("success");
                                 System.out.println("Customer data updated successfully.");
                             } else {
                                 objectOut.writeObject("FAILURE: Unable to update customer data.");
@@ -531,7 +528,8 @@ class ClientHandler extends Thread {
             }
         } catch (Exception e) {
             System.out.println("Error handling client: " + e.getMessage());
-        }// } finally {
+        }
+        // } finally {
         //     try {
         //         if (objectIn != null) {
         //             objectIn.close();
@@ -613,4 +611,5 @@ class ClientHandler extends Thread {
         }
         return false;
     }
+
 }
