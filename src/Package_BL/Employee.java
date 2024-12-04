@@ -96,7 +96,8 @@ public class Employee {
 
     }
 
-    public String addCustomerDetails(String FILE_NAME, String cnic, String name, String address, String phoneNumber, String customerType, String meterType) {
+    public String addCustomerDetails(String FILE_NAME, String cnic, String name, String address, String phoneNumber,
+            String customerType, String meterType) {
         while (true) {
             if (cnic.length() != 13 || !cnic.matches("\\d+")) {
                 return "Invalid CNIC number!";
@@ -106,19 +107,19 @@ public class Employee {
                 break;
             }
         }
-    
+
         if (Customer.getMeterCountForCNIC(cnic, FILE_NAME) >= 3) {
             return "Not Allowed! Maximum 3 meters allowed per CNIC.";
         }
-    
+
         Customer customer = new Customer(cnic, name, address, phoneNumber, customerType, meterType);
-    
+
         writeCustomerDataInFile(customer, FILE_NAME);
-    
+
         // Return SUCCESS to match the server condition
         return "SUCCESS";
     }
-    
+
     private void writeCustomerDataInFile(Customer customer, String FILE_NAME) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
             writer.write(customer.toFileFormat());
@@ -127,7 +128,6 @@ public class Employee {
             System.out.println("Error while writing to the file: " + e.getMessage());
         }
     }
-    
 
     public boolean addBillingInfo(String customerID, int currentRegularUnits, int currentPeakUnits) {
         BillManagment billManagment = new BillManagment();
@@ -137,22 +137,19 @@ public class Employee {
     public boolean saveChangesToTariffTaxDB(DefaultTableModel tableModel) {
         return TariffTax.saveChangesToTariffTaxDB(tableModel);
     }
-    public Object[][] readDataFromTariffDB()
-    {
+
+    public Object[][] readDataFromTariffDB() {
         return TariffTax.readDataFromFile(projectTxtFiles.TariffFile);
     }
-
-
-
 
     public Object[][] CNICExpiresIn30days() {
         return NADRA.getCNICExpiresIn30days();
     }
 
     public boolean saveChangesToBillingDB(DefaultTableModel tableModel, String latestEditableMonth) {
-        return BillManagment.saveChangesToBillingDB(tableModel,latestEditableMonth);
+        return BillManagment.saveChangesToBillingDB(tableModel, latestEditableMonth);
     }
-    
+
     public boolean saveChangesToCustomerDB(DefaultTableModel tableModel) {
         return Customer.saveChangesToCustomerDB(tableModel);
     }
@@ -160,7 +157,7 @@ public class Employee {
     public Object[][] viewPaid_UnpaidBillReport() {
         return BillManagment.calulateAmountUpdainANDPaidBills();
     }
-    
+
     public Object[][] readDataFromCustomerDB() {
         return Customer.readDataFromCustomerDB();
     }
@@ -210,10 +207,9 @@ public class Employee {
         SimpleDateFormat formatter = new SimpleDateFormat("MM/yyyy");
         return formatter.format(new Date());
     }
-    
-        public static boolean isSinglePhase(String customerID){
-            return Customer.singlePhaseCheck(customerID);
-        }
-    
+
+    public static boolean isSinglePhase(String customerID) {
+        return Customer.singlePhaseCheck(customerID);
+    }
 
 }

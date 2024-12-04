@@ -2,7 +2,20 @@
 
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "java",
+            "name": "EmployeeClient",
+            "request": "launch",
+            "mainClass": "Package_BL.EmployeeClient",
+            "projectName": "ServerAssignment_dd24436"
+        },
+        {
+            "type": "java",
+            "name": "LescoServer",
+            "request": "launch",
+            "mainClass": "Package_BL.LescoServer",
+            "projectName": "ServerAssignment_dd24436"
+        },
         {
             "type": "java",
             "name": "Current File",
@@ -30,6 +43,5 @@
             "mainClass": "Package_BL.LescoServer",
             "projectName": "LESCO-Management-system_3ebe8b43"
         }
-        
     ]
 }

@@ -139,17 +139,24 @@ class EmployeeTest {
 //    }
 
 
-//    @Test
-//    void testCNICExpiresIn30days(){
-//        Object[][] data = employee.CNICExpiresIn30days();
-//
-//    }
+   @Test
+   void testCNICExpiresIn30days(){
+       Object[][] result = employee.CNICExpiresIn30days();
 
+        Object[][] expected = {
+                {"1234567890123", "11/09/2022", "20/12/2024"},
+                {"4567898765432", "11/09/2021", "29/12/2024"}
+        };
 
+        assertEquals(expected.length, result.length);
 
+        for (int i = 0; i < result.length; i++) {
+            assertArrayEquals(expected[i], result[i]);
+        }
+   }
 
     @Test
-    void testReadDataFromFile(){
+    void testReadDataFromTariffTaxFile(){
 
         Object[][] result = employee.readDataFromTariffDB();
 
@@ -172,8 +179,8 @@ class EmployeeTest {
 
         String[] columns = {"Type", "Meter", "Regular Units", "Peak Units", "Tax", "Fixed Tax"};
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
-        tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "155"});
-        tableModel.addRow(new Object[]{"Commercial Type", "1", "15", " ", "20", "255"});
+        tableModel.addRow(new Object[]{"Domestic Type", "1", "5", " ", "17", "150"});
+        tableModel.addRow(new Object[]{"Commercial Type", "1", "15", " ", "20", "250"});
 
 
         boolean result = employee.saveChangesToTariffTaxDB(tableModel);
@@ -182,8 +189,8 @@ class EmployeeTest {
 
         Object[][] resultData = employee.readDataFromTariffDB();
         Object[][] expectedData = {
-                {"Domestic Type", "1", "5", " ", "17", "155"},
-                {"Commercial Type", "1", "15", " ", "20", "255"},
+                {"Domestic Type", "1", "5", " ", "17", "150"},
+                {"Commercial Type", "1", "15", " ", "20", "250"},
                 {"Domestic Type", "3", "8", "12", "17", "150"},
                 {"Commercial Type", "3", "18", "25", "20", "250"}
         };
@@ -194,6 +201,64 @@ class EmployeeTest {
         }
 
     }
+
+    @Test
+    void testReadDataFromBillingFile(){
+
+        Object[][] result = employee.readDataFromFileToDisplayBill();
+
+        Object[][] expected = {
+            // Billing information
+            {"0003", "11/2024", "300", "0", "4500.0", "900.0", "250.0", "5650.0", "29/10/2024", "05/11/2024", "Paid"},
+            {"0002", "11/2024", "50", "10", "1150.0", "230.0", "250.0", "1630.0", "27/10/2024", "03/11/2024", "Unpaid"},
+            {"0001", "11/2024", "100", "200", "6800.0", "1360.0", "250.0", "8410.0", "27/10/2024", "03/11/2024", "Unpaid"}
+        };
+        
+
+        assertEquals(expected.length, result.length);
+
+        for (int i = 0; i < result.length; i++) {
+            assertArrayEquals(expected[i], result[i]);
+        }
+    }
+  
+    @Test
+    void testReadDataFromCustomerFile(){
+
+        Object[][] result = employee.readDataFromCustomerDB();
+
+        Object[][] expected = {
+            {"0001", "Hamza", "Bahria Orchard", "039845739847", "1234567890123", "Commercial", "Three", "11/09/2024", "0", "0"},
+            {"0002", "Hania", "PCSIR", "03493490533", "4567898765432", "Commercial", "Three", "11/09/2024", "0", "0"},
+            {"0003", "Ahad", "DHA Phase 9", "03234234234", "3215438769872", "Commercial", "Single", "11/09/2024", "300", "0"}
+        };
+        
+
+        assertEquals(expected.length, result.length);
+
+        for (int i = 0; i < result.length; i++) {
+            assertArrayEquals(expected[i], result[i]);
+        }
+    }
+
+    @Test
+    void testviewPaid_UnpaidBillReport(){
+
+        Object[][] result = employee.viewPaid_UnpaidBillReport();
+
+        Object[][] expected = {
+            {"1", "5650.0", "Paid"},
+            {"2", "10040.0", "Unpaid"},
+        };
+        
+
+        assertEquals(expected.length, result.length);
+
+        for (int i = 0; i < result.length; i++) {
+            assertArrayEquals(expected[i], result[i]);
+        }
+    }
+
 
 
 

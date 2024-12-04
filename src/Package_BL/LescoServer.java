@@ -149,7 +149,8 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("FAILURE");
                         System.out.println("Login failed for UserID: " + userName);
                     }
-                } else if ("getUserName".equalsIgnoreCase(command)) {
+                } 
+                else if ("getUserName".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         objectOut.writeObject(loggedInEmployee.getUserName());
                         System.out.println("Sent Name: " + loggedInEmployee.getUserName());
@@ -157,8 +158,6 @@ class ClientHandler extends Thread {
                         objectOut.writeObject("ERROR: Not logged in");
                     }
                 }
-
-                // Add New Customer (Employee Action)
                 else if ("AddNewCustomer".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
@@ -462,14 +461,12 @@ class ClientHandler extends Thread {
                 else if ("CNICreport".equalsIgnoreCase(command)) {
                     if (loggedInEmployee != null) {
                         try {
-                            // Fetch customer data
                             Object[][] custData = loggedInEmployee.CNICExpiresIn30days();
-                            // Send data to client
+                            // System.out.println("-->>"+custData);
                             objectOut.writeObject(custData);
-                            objectOut.flush(); // Ensure data is sent immediately
+                            objectOut.flush(); 
                             System.out.println("Sent customer data object to the client.");
                         } catch (Exception e) {
-                            // Log error and send response
                             objectOut.writeObject("ERROR: Unable to fetch customer data. Details: " + e.getMessage());
                             objectOut.flush();
                             e.printStackTrace();

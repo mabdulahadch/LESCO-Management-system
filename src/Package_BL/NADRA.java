@@ -164,19 +164,26 @@ public class NADRA {
     public static Object[][] getCNICExpiresIn30days() {
         ArrayList<Object[]> dataList = new ArrayList<>();
         boolean flag = false;
-        //System.out.println("These CNICs will expire in the next 30 days:");
+
+        
+        LocalDate today = LocalDate.now();
+        LocalDate thirtyDaysFromNow = today.plusDays(30);
+        // System.out.println("Date after 30 days"+thirtyDaysFromNow);
 
         try (
-                BufferedReader nadraReader = new BufferedReader(new FileReader(projectTxtFiles.NadraFile)); BufferedReader customerReader = new BufferedReader(new FileReader(projectTxtFiles.CustomerFile))) {
+                BufferedReader nadraReader = new BufferedReader(new FileReader(projectTxtFiles.NadraFile)); 
+                BufferedReader customerReader = new BufferedReader(new FileReader(projectTxtFiles.CustomerFile))) {
             ArrayList<String> customerList = new ArrayList<>();
+            
             String customerLine;
             while ((customerLine = customerReader.readLine()) != null) {
                 customerList.add(customerLine);
             }
 
             String nadraLine;
-            LocalDate today = LocalDate.now();
-            LocalDate thirtyDaysFromNow = today.plusDays(30);
+            // LocalDate today = LocalDate.now();
+            // LocalDate thirtyDaysFromNow = today.plusDays(30);
+            // System.out.println("Date after 30 days"+thirtyDaysFromNow);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -187,8 +194,8 @@ public class NADRA {
                 for (String customerEntry : customerList) {
                     String[] customerData = customerEntry.split(",");
 
-                    if (customerData[1].equals(nadraData[0]) && cnicExpiryDate.isAfter(today) && cnicExpiryDate.isBefore(thirtyDaysFromNow)) {
-                        //System.out.println("CNIC: " + nadraData[0] + " (Expiry Date: " + nadraData[2] + ")");
+                    if (customerData[4].equals(nadraData[0]) && cnicExpiryDate.isAfter(today) && cnicExpiryDate.isBefore(thirtyDaysFromNow)) {
+                        // System.out.println("CNIC: " + nadraData[0] + " (Expiry Date: " + nadraData[2] + ")");
 
                         dataList.add(new Object[]{customerData[0], nadraData[0], nadraData[1], nadraData[2]});
 
@@ -203,7 +210,6 @@ public class NADRA {
         }
 
         if (!flag) {
-            //JOptionPane.showMessageDialog(null, "No CNICs found that will expire in the next 30 days.");
             System.out.println("No CNICs found that will expire in the next 30 days.");
         }
 

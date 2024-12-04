@@ -122,7 +122,7 @@ public class EmployeeDashBoard {
                     }
                     case "Logout" -> {  // Done
                         employeeFrame.dispose();
-                        new Lesco();
+                        // new Lesco();
                     }
                     default -> {
                         //contentPanel.add(new JPanel(), "DefaultPanel");
